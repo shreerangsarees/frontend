@@ -5,6 +5,9 @@ import User from '../models/User';
 
 const router = express.Router();
 
+// Frontend URL - use environment variable or default to 8080
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:8080';
+
 // Register
 router.post('/register', async (req, res, next) => {
     try {
@@ -61,10 +64,10 @@ router.post('/login', (req, res, next) => {
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
 router.get('/google/callback',
-    passport.authenticate('google', { failureRedirect: 'http://localhost:5173/auth?error=true' }),
+    passport.authenticate('google', { failureRedirect: `${FRONTEND_URL}/auth?error=true` }),
     (req, res) => {
         // Successful authentication, redirect home.
-        res.redirect('http://localhost:5173/');
+        res.redirect(`${FRONTEND_URL}/`);
     }
 );
 
@@ -72,9 +75,9 @@ router.get('/google/callback',
 router.get('/facebook', passport.authenticate('facebook', { scope: ['email'] }));
 
 router.get('/facebook/callback',
-    passport.authenticate('facebook', { failureRedirect: 'http://localhost:5173/auth?error=true' }),
+    passport.authenticate('facebook', { failureRedirect: `${FRONTEND_URL}/auth?error=true` }),
     (req, res) => {
-        res.redirect('http://localhost:5173/');
+        res.redirect(`${FRONTEND_URL}/`);
     }
 );
 
@@ -87,8 +90,9 @@ router.get('/current_user', (req, res) => {
 router.get('/logout', (req, res, next) => {
     req.logout((err) => {
         if (err) { return next(err); }
-        res.redirect('http://localhost:5173/');
+        res.redirect(`${FRONTEND_URL}/`);
     });
 });
 
 export default router;
+

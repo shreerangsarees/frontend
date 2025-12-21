@@ -568,6 +568,20 @@ const Checkout: React.FC = () => {
                 )}
               </Button>
 
+              {/* Validation message when address not selected */}
+              {!selectedAddress && addresses.length === 0 && (
+                <p className="text-sm text-destructive text-center mt-3 flex items-center justify-center gap-1">
+                  <MapPin className="h-4 w-4" />
+                  Please add a delivery address to continue
+                </p>
+              )}
+              {!selectedAddress && addresses.length > 0 && (
+                <p className="text-sm text-destructive text-center mt-3 flex items-center justify-center gap-1">
+                  <MapPin className="h-4 w-4" />
+                  Please select a delivery address
+                </p>
+              )}
+
               <p className="text-xs text-muted-foreground text-center mt-4">
                 Estimated delivery: {storeInfo.estimatedDeliveryTime}
               </p>
