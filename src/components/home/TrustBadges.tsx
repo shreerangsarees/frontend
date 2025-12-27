@@ -4,18 +4,18 @@ import { Truck, Shield, Clock, CreditCard } from 'lucide-react';
 const badges = [
   {
     icon: Truck,
-    title: 'Fast Delivery',
-    description: 'Get your order in 25-35 mins',
+    title: 'Fast Shipping',
+    description: 'Delivery in 3-5 business days',
   },
   {
     icon: Shield,
-    title: '100% Fresh',
-    description: 'Quality guaranteed or money back',
+    title: 'Premium Quality',
+    description: 'Authentic handcrafted sarees',
   },
   {
     icon: Clock,
-    title: 'Open Daily',
-    description: '8 AM to 10 PM everyday',
+    title: 'Easy Returns',
+    description: '7 days hassle-free returns',
   },
   {
     icon: CreditCard,
@@ -35,8 +35,8 @@ const TrustBadges: React.FC = () => {
               className="flex flex-col items-center text-center p-4 opacity-0 animate-fade-in"
               style={{ animationDelay: `${index * 0.1}s`, animationFillMode: 'forwards' }}
             >
-              <div className="h-14 w-14 rounded-2xl bg-coral-light flex items-center justify-center mb-4">
-                <badge.icon className="h-7 w-7 text-coral" />
+              <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
+                <badge.icon className="h-7 w-7 text-primary" />
               </div>
               <h3 className="font-display font-semibold text-foreground mb-1">
                 {badge.title}

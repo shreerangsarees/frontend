@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import ProductCard from '@/components/products/ProductCard';
+import { ProductCardSkeleton } from '@/components/products/ProductCardSkeleton';
 
 import { Product } from '@/types';
 
@@ -12,7 +13,11 @@ const FeaturedProducts: React.FC = () => {
   useEffect(() => {
     const fetchFeatured = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/products/featured');
+        const [response] = await Promise.all([
+          fetch('http://localhost:5000/api/products/featured'),
+          new Promise(resolve => setTimeout(resolve, 1000))
+        ]);
+
         if (!response.ok) {
           throw new Error('Failed to fetch products');
         }
@@ -34,7 +39,7 @@ const FeaturedProducts: React.FC = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-coral flex items-center justify-center">
+            <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center">
               <Sparkles className="h-5 w-5 text-primary-foreground" />
             </div>
             <div>
@@ -48,7 +53,7 @@ const FeaturedProducts: React.FC = () => {
           </div>
           <Link
             to="/offers"
-            className="hidden sm:flex items-center gap-1 text-coral font-medium hover:underline group"
+            className="hidden sm:flex items-center gap-1 text-primary font-medium hover:underline group"
           >
             View All Deals
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -59,7 +64,7 @@ const FeaturedProducts: React.FC = () => {
         {loading ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
             {[1, 2, 3, 4].map(i => (
-              <div key={i} className="h-64 bg-gray-200 animate-pulse rounded-xl"></div>
+              <ProductCardSkeleton key={i} />
             ))}
           </div>
         ) : (
@@ -98,7 +103,7 @@ const FeaturedProducts: React.FC = () => {
         <div className="mt-6 sm:hidden text-center">
           <Link
             to="/offers"
-            className="inline-flex items-center gap-1 text-coral font-medium"
+            className="inline-flex items-center gap-1 text-primary font-medium"
           >
             View All Deals
             <ArrowRight className="h-4 w-4" />

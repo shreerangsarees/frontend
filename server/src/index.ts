@@ -1,28 +1,30 @@
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import mongoose from 'mongoose';
 import cors from 'cors';
-import session from 'express-session';
-import passport from 'passport';
 import dotenv from 'dotenv';
+import './config/firebase'; // Ensure Firebase Admin is initialized
 
 dotenv.config();
 
-// Import config
-import connectDB from './config/db';
-import { seedAdmin, seedCoupons } from './config/seed';
-import './config/passport'; // Initialize passport strategies
-
 // Import routes
 import productRoutes from './routes/productRoutes';
-import authRoutes from './routes/authRoutes';
+// import authRoutes from './routes/authRoutes'; // Deprecated
 import orderRoutes from './routes/orderRoutes';
 import couponRoutes from './routes/couponRoutes';
 import paymentRoutes from './routes/paymentRoutes';
 import userRoutes from './routes/userRoutes';
 import settingsRoutes from './routes/settingsRoutes';
 import categoryRoutes from './routes/categoryRoutes';
+import analyticsRoutes from './routes/analyticsRoutes';
+import reviewRoutes from './routes/reviewRoutes';
+import wishlistRoutes from './routes/wishlistRoutes';
+import invoiceRoutes from './routes/invoiceRoutes';
+import bannerRoutes from './routes/bannerRoutes';
+import testimonialRoutes from './routes/testimonialRoutes';
+import notificationRoutes from './routes/notificationRoutes';
+import blogRoutes from './routes/blogRoutes';
+import uploadRoutes from './routes/uploadRoutes';
 
 const app = express();
 const httpServer = createServer(app);
@@ -39,7 +41,7 @@ const allowedOrigins = [
 
 export const io = new Server(httpServer, {
     cors: {
-        origin: allowedOrigins,
+        origin: true, // Allow any origin for development
         methods: ['GET', 'POST'],
         credentials: true
     }
@@ -61,6 +63,14 @@ io.on('connection', (socket) => {
         console.log(`Socket ${socket.id} joined admin room`);
     });
 
+    // Join user-specific room for order notifications
+    socket.on('joinUserRoom', (data: { userId: string }) => {
+        if (data.userId) {
+            socket.join(`user-${data.userId}`);
+            console.log(`Socket ${socket.id} joined user room user-${data.userId}`);
+        }
+    });
+
     socket.on('disconnect', () => {
         console.log('Client disconnected:', socket.id);
     });
@@ -68,46 +78,51 @@ io.on('connection', (socket) => {
 
 // Middleware
 app.use(cors({
-    origin: allowedOrigins,
+    origin: true, // Allow any origin
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
-app.use(express.json());
-app.use(session({
-    secret: process.env.SESSION_SECRET || 'secret_key_change_in_production',
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: 24 * 60 * 60 * 1000 // 24 hours
-    }
-}));
-app.use(passport.initialize());
-app.use(passport.session());
-
-// Connect to Database
-connectDB().then(() => {
-    seedAdmin();
-    seedCoupons();
-});
+app.use(express.json({ limit: '10mb' })); // Increased for base64 images
 
 // Routes
 app.use('/api/products', productRoutes);
-app.use('/auth', authRoutes);
+// app.use('/auth', authRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/coupons', couponRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/categories', categoryRoutes);
+app.use('/api/analytics', analyticsRoutes);
+app.use('/api/reviews', reviewRoutes);
+app.use('/api/wishlist', wishlistRoutes);
+app.use('/api/invoices', invoiceRoutes);
+app.use('/api/banners', bannerRoutes);
+app.use('/api/testimonials', testimonialRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/blogs', blogRoutes);
+app.use('/api/upload', uploadRoutes);
 
 app.get('/', (req, res) => {
-    res.send('T-Mart Express API is running with Socket.io');
+    res.send('Shreerang Saree API is running with Firebase & Socket.io');
 });
 
-// Start Server with Socket.io
-httpServer.listen(Number(PORT), '0.0.0.0', () => {
-    console.log(`Server running on port ${PORT} with Socket.io enabled`);
-});
+// Start Server
+const startServer = async () => {
+    try {
+        // No MongoDB connection needed
 
+        // Seeding logic would need to be rewritten for Firestore
+        // seedAdmin(); 
+
+        httpServer.listen(Number(PORT), '0.0.0.0', () => {
+            console.log(`Server running on port ${PORT} with Firebase enabled`);
+        });
+    } catch (error) {
+        console.error('Failed to start server', error);
+        process.exit(1);
+    }
+};
+
+startServer();

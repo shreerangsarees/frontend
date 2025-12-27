@@ -43,7 +43,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, className }) => {
       </div>
 
       {/* Name */}
-      <h3 className="font-medium text-foreground text-center text-sm sm:text-base group-hover:text-coral transition-colors">
+      <h3 className="font-medium text-foreground text-center text-sm sm:text-base group-hover:text-primary transition-colors">
         {category.name}
       </h3>
 

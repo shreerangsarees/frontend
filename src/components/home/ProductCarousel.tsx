@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import ProductCard from '@/components/products/ProductCard';
+import { ProductCardSkeleton } from '@/components/products/ProductCardSkeleton';
 import { Product } from '@/types';
 
 interface ProductCarouselProps {
@@ -19,7 +20,12 @@ const ProductCarousel: React.FC<ProductCarouselProps> = ({ title, description, a
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await fetch(apiUrl);
+                // Add minimum delay to show skeleton prevents flicker
+                const [response] = await Promise.all([
+                    fetch(apiUrl),
+                    new Promise(resolve => setTimeout(resolve, 1000))
+                ]);
+
                 if (!response.ok) throw new Error('Failed to fetch');
                 const data = await response.json();
                 setProducts(data);
@@ -42,7 +48,7 @@ const ProductCarousel: React.FC<ProductCarouselProps> = ({ title, description, a
                 <div className="flex items-center justify-between mb-8">
                     <div className="flex items-center gap-3">
                         {Icon && (
-                            <div className="h-10 w-10 rounded-xl bg-coral flex items-center justify-center">
+                            <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center">
                                 <Icon className="h-5 w-5 text-primary-foreground" />
                             </div>
                         )}
@@ -60,7 +66,7 @@ const ProductCarousel: React.FC<ProductCarouselProps> = ({ title, description, a
                     {linkUrl && (
                         <Link
                             to={linkUrl}
-                            className="hidden sm:flex items-center gap-1 text-coral font-medium hover:underline group"
+                            className="hidden sm:flex items-center gap-1 text-primary font-medium hover:underline group"
                         >
                             View All
                             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -72,7 +78,7 @@ const ProductCarousel: React.FC<ProductCarouselProps> = ({ title, description, a
                 {loading ? (
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
                         {[1, 2, 3, 4].map(i => (
-                            <div key={i} className="h-64 bg-gray-200 animate-pulse rounded-xl"></div>
+                            <ProductCardSkeleton key={i} />
                         ))}
                     </div>
                 ) : (
@@ -90,10 +96,13 @@ const ProductCarousel: React.FC<ProductCarouselProps> = ({ title, description, a
                                     name: product.name,
                                     image: product.image,
                                     price: product.price,
+                                    originalPrice: product.original_price || product.originalPrice, // Map DB snake_case
                                     category: product.category,
                                     rating: product.averageRating || product.rating,
-                                    discount: product.discount,
-                                    stock: product.stock
+                                    discount: product.discount, // Check if this needs calculation
+                                    stock: product.stock,
+                                    isNew: product.is_new || product.isNew,
+                                    isAvailable: product.is_available ?? product.isAvailable ?? true
                                 }} />
                             </div>
                         ))}

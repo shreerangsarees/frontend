@@ -59,7 +59,7 @@ const Privacy: React.FC = () => {
                             <h2 className="text-xl font-bold mb-4">6. Your Rights</h2>
                             <p className="text-muted-foreground mb-4">
                                 You have the right to access, update, or delete your personal information.
-                                Contact us at support@tmart.com for any privacy-related requests.
+                                Contact us at shreerangsaree@gmail.com for any privacy-related requests.
                             </p>
                         </section>
 
@@ -67,8 +67,8 @@ const Privacy: React.FC = () => {
                             <h2 className="text-xl font-bold mb-4">7. Contact Us</h2>
                             <p className="text-muted-foreground mb-4">
                                 If you have questions about this Privacy Policy, please contact us at:<br />
-                                Phone: 7096867438<br />
-                                Email: support@tmart.com
+                                Phone: 9137554336<br />
+                                Email: shreerangsaree@gmail.com
                             </p>
                         </section>
                     </div>

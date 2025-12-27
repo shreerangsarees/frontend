@@ -10,6 +10,7 @@ import { storeInfo } from '@/lib/store';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Address } from '@/types';
+import api from '@/api/axios';
 
 /* AvailableCoupons removed - logic moved to Cart */
 
@@ -31,15 +32,32 @@ const Checkout: React.FC = () => {
   const [showAddAddress, setShowAddAddress] = useState(false);
   const [placingOrder, setPlacingOrder] = useState(false);
   const [loadingAddresses, setLoadingAddresses] = useState(true);
+  const [razorpayKey, setRazorpayKey] = useState<string>('');
+
+  useEffect(() => {
+    // Fetch Razorpay Key
+    fetch('/api/payment/config')
+      .then(res => res.json())
+      .then(data => {
+        if (data.razorpayKeyId) setRazorpayKey(data.razorpayKeyId);
+      })
+      .catch(err => console.error("Failed to fetch razorpay key", err));
+  }, []);
 
   useEffect(() => {
     if (user?.addresses) {
       setAddresses(user.addresses);
       setLoadingAddresses(false);
 
-      const defaultAddr = user.addresses.find(a => a.is_default);
-      if (defaultAddr && !selectedAddress) {
-        setSelectedAddress(defaultAddr._id || defaultAddr.id || null);
+      if (!selectedAddress && user.addresses.length > 0) {
+        const defaultIndex = user.addresses.findIndex(a => a.is_default);
+        const indexToSelect = defaultIndex >= 0 ? defaultIndex : 0;
+        const addrToSelect = user.addresses[indexToSelect];
+
+        if (addrToSelect) {
+          const id = addrToSelect._id || addrToSelect.id || `temp-${indexToSelect}`;
+          setSelectedAddress(id);
+        }
       }
     } else {
       setLoadingAddresses(false);
@@ -52,28 +70,29 @@ const Checkout: React.FC = () => {
     full_address: '',
     city: '',
     pincode: '',
+    phone: '',
   });
 
   const handleAddAddress = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const res = await fetch('/api/users/address', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...newAddress,
-          is_default: addresses.length === 0
-        })
-      });
+    if (!newAddress.label || !newAddress.full_address || !newAddress.city || !newAddress.pincode || !newAddress.phone) {
+      toast.error('Please fill in all fields');
+      return;
+    }
 
-      if (!res.ok) throw new Error('Failed to add address');
+    try {
+      const { data } = await api.post('/users/address', {
+        ...newAddress,
+        is_default: addresses.length === 0
+      });
 
       await refreshProfile();
       toast.success('Address added successfully');
-      setNewAddress({ label: 'Home', full_address: '', city: '', pincode: '' });
+      setNewAddress({ label: 'Home', full_address: '', city: '', pincode: '', phone: '' });
       setShowAddAddress(false);
-    } catch (error) {
-      toast.error('Error saving address');
+    } catch (error: any) {
+      console.error('Error adding address:', error);
+      toast.error(error.response?.data?.message || 'Error saving address');
     }
   };
 
@@ -81,28 +100,25 @@ const Checkout: React.FC = () => {
   const userName = user?.name || 'Guest User';
   const userEmail = user?.email || 'guest@example.com';
 
-  const [shippingCost, setShippingCost] = useState(storeInfo.deliveryFee);
+  // Dynamic Settings State
+  const [standardDeliveryFee, setStandardDeliveryFee] = useState(storeInfo.deliveryFee);
+  const [minOrderFreeDelivery, setMinOrderFreeDelivery] = useState(storeInfo.minOrderFreeDelivery);
 
-  // Check first delivery free
+  // Fetch Store Settings
   useEffect(() => {
-    const checkEligibility = async () => {
-      if (!user) return;
-      try {
-        const res = await fetch('/api/orders/count');
-        if (res.ok) {
-          const data = await res.json();
-          if (data.count === 0 && totalAmount >= 0) { // If first order
-            setShippingCost(0);
-          }
+    fetch('/api/settings')
+      .then(res => res.json())
+      .then(data => {
+        if (data) {
+          if (typeof data.deliveryFee === 'number') setStandardDeliveryFee(data.deliveryFee);
+          if (typeof data.minOrderFreeDelivery === 'number') setMinOrderFreeDelivery(data.minOrderFreeDelivery);
         }
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    checkEligibility();
-  }, [user, totalAmount]);
+      })
+      .catch(err => console.error("Failed to fetch settings", err));
+  }, []);
 
-  const deliveryFee = totalAmount >= storeInfo.minOrderFreeDelivery ? 0 : shippingCost;
+  // Calculate final delivery fee
+  const deliveryFee = totalAmount >= minOrderFreeDelivery ? 0 : standardDeliveryFee;
 
   /* Local coupon state removed. Using Context. */
 
@@ -126,7 +142,16 @@ const Checkout: React.FC = () => {
       return;
     }
 
-    const addressDetails = addresses.find(a => (a._id || a.id) === selectedAddress);
+    // Match lookup logic exactly with how we render the list
+    const addressDetails = addresses.find((a, index) => {
+      const addrId = a._id || a.id || `temp-${index}`;
+      return addrId === selectedAddress;
+    });
+
+    if (!addressDetails) {
+      toast.error('Invalid address selected. Please select again.');
+      return;
+    }
 
     setPlacingOrder(true);
 
@@ -135,7 +160,8 @@ const Checkout: React.FC = () => {
         items: items.map(item => ({
           product: (item.product as any)._id || item.product.id,
           quantity: item.quantity,
-          price: item.product.price
+          price: item.product.price,
+          selectedColor: item.selectedColor
         })),
         totalAmount: grandTotal,
         shippingAddress: addressDetails, // assuming full object is desired or mapped in backend
@@ -143,13 +169,7 @@ const Checkout: React.FC = () => {
       };
 
       if (paymentMethod === 'cod') {
-        const res = await fetch('/api/orders', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(orderPayload)
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message || 'Failed to create order');
+        const { data } = await api.post('/orders', orderPayload);
 
         toast.success('Order placed successfully!');
         clearCart();
@@ -163,47 +183,47 @@ const Checkout: React.FC = () => {
         }
 
         // Create Order in Backend
-        const orderRes = await fetch('/api/payment/create-order', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ amount: grandTotal })
-        });
+        const { data: orderData } = await api.post('/payment/create-order', { amount: grandTotal });
 
-        if (!orderRes.ok) throw new Error('Failed to initiate payment');
-        const orderData = await orderRes.json();
+        // Fetch Key from Backend if not already loaded (though we should have it)
+        // Or better, just use the one we fetched on mount. 
+        // For robustness, let's fetch it if missing or fallback to env.
+
+        let keyToUse = razorpayKey;
+        if (!keyToUse) {
+          const { data: keyData } = await api.get('/payment/config');
+          keyToUse = keyData.razorpayKeyId;
+        }
+
+        if (!keyToUse) {
+          toast.error("Payment configuration missing");
+          return;
+        }
 
         const options = {
-          key: import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_Ru8zWOt0v2kEu3",
+          key: keyToUse,
           amount: orderData.amount,
           currency: orderData.currency,
-          name: "T-Mart Express",
+          name: "Shreerang Saree",
           description: "Order Payment",
           order_id: orderData.id,
           handler: async function (response: any) {
             // Verify Payment
             try {
-              const verifyRes = await fetch('/api/payment/verify', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  razorpay_order_id: response.razorpay_order_id,
-                  razorpay_payment_id: response.razorpay_payment_id,
-                  razorpay_signature: response.razorpay_signature,
-                  orderDetails: orderPayload // Pass details to save after verification
-                })
+              const { data: verifyData } = await api.post('/payment/verify-payment', {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                orderDetails: orderPayload // Pass details to save after verification
               });
-              if (verifyRes.ok) {
-                const verifyData = await verifyRes.json();
-                toast.success('Payment Successful!');
-                clearCart();
-                // Assuming verify returns the order or ID. If not, fallback to /my-orders
-                navigate(verifyData._id ? `/order-success/${verifyData._id}` : '/my-orders');
-              } else {
-                toast.error('Payment verification failed');
-              }
+
+              toast.success('Payment Successful!');
+              clearCart();
+              // Assuming verify returns the order or ID. If not, fallback to /my-orders
+              navigate(verifyData._id ? `/order-success/${verifyData._id}` : '/my-orders');
             } catch (err) {
               console.error(err);
-              toast.error('Payment verification error');
+              toast.error('Payment verification failed');
             }
           },
           prefill: {
@@ -222,7 +242,7 @@ const Checkout: React.FC = () => {
 
     } catch (error: any) {
       console.error('Order error:', error);
-      toast.error(error.message || 'Failed to place order.');
+      toast.error(error.response?.data?.message || error.message || 'Failed to place order.');
     } finally {
       setPlacingOrder(false);
     }
@@ -232,7 +252,7 @@ const Checkout: React.FC = () => {
     return (
       <Layout>
         <div className="container-app py-16 flex items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-coral" />
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       </Layout>
     );
@@ -276,7 +296,7 @@ const Checkout: React.FC = () => {
             <div className="bg-card rounded-2xl border border-border p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-display font-bold text-foreground flex items-center gap-2">
-                  <MapPin className="h-5 w-5 text-coral" />
+                  <MapPin className="h-5 w-5 text-primary" />
                   Delivery Address
                 </h2>
                 <Button
@@ -331,6 +351,15 @@ const Checkout: React.FC = () => {
                         required
                       />
                     </div>
+                    <div>
+                      <label className="block text-sm font-medium text-foreground mb-1">Phone Number</label>
+                      <Input
+                        value={newAddress.phone}
+                        onChange={(e) => setNewAddress({ ...newAddress, phone: e.target.value })}
+                        placeholder="9876543210"
+                        required
+                      />
+                    </div>
                   </div>
                   <div className="flex gap-2">
                     <Button type="submit" size="sm">Save Address</Button>
@@ -350,46 +379,50 @@ const Checkout: React.FC = () => {
               {loadingAddresses ? (
                 <div className="flex justify-center py-8">
                   {(() => { if (loadingAddresses) setTimeout(() => setLoadingAddresses(false), 500); return null; })()}
-                  <Loader2 className="h-6 w-6 animate-spin text-coral" />
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
                 </div>
               ) : addresses.length > 0 ? (
                 <div className="space-y-3">
-                  {addresses.map((address) => (
-                    <label
-                      key={address._id || address.id}
-                      className={cn(
-                        "flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all",
-                        selectedAddress === (address._id || address.id)
-                          ? "border-coral bg-coral-light"
-                          : "border-border hover:border-coral/50"
-                      )}
-                    >
-                      <input
-                        type="radio"
-                        name="address"
-                        value={address._id || address.id}
-                        checked={selectedAddress === (address._id || address.id)}
-                        onChange={() => setSelectedAddress(address._id || address.id || null)}
-                        className="mt-1"
-                      />
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-foreground">{address.label}</span>
-                          {address.is_default && (
-                            <span className="text-xs bg-coral text-primary-foreground px-2 py-0.5 rounded-full">
-                              Default
-                            </span>
-                          )}
+                  {addresses.map((address, index) => {
+                    const addrId = address._id || address.id || `temp-${index}`;
+                    return (
+                      <label
+                        key={addrId}
+                        className={cn(
+                          "flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all",
+                          selectedAddress === addrId
+                            ? "border-primary bg-primary-light"
+                            : "border-border hover:border-primary/50"
+                        )}
+                      >
+                        <input
+                          type="radio"
+                          name="address"
+                          value={addrId}
+                          checked={selectedAddress === addrId}
+                          onChange={() => setSelectedAddress(addrId)}
+                          className="mt-1"
+                        />
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-foreground">{address.label}</span>
+                            {address.is_default && (
+                              <span className="text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full">
+                                Default
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {address.full_address}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {address.city} - {address.pincode}
+                          </p>
+                          {address.phone && <p className="text-xs text-muted-foreground">Phone: {address.phone}</p>}
                         </div>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {address.full_address}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {address.city} - {address.pincode}
-                        </p>
-                      </div>
-                    </label>
-                  ))}
+                      </label>
+                    )
+                  })}
                 </div>
               ) : (
                 <p className="text-muted-foreground text-center py-8">
@@ -401,7 +434,7 @@ const Checkout: React.FC = () => {
             {/* Payment Method */}
             <div className="bg-card rounded-2xl border border-border p-6">
               <h2 className="text-lg font-display font-bold text-foreground flex items-center gap-2 mb-4">
-                <CreditCard className="h-5 w-5 text-coral" />
+                <CreditCard className="h-5 w-5 text-primary" />
                 Payment Method
               </h2>
 
@@ -410,8 +443,8 @@ const Checkout: React.FC = () => {
                   className={cn(
                     "flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all",
                     paymentMethod === 'cod'
-                      ? "border-coral bg-coral-light"
-                      : "border-border hover:border-coral/50"
+                      ? "border-primary bg-primary-light"
+                      : "border-border hover:border-primary/50"
                   )}
                 >
                   <input
@@ -432,8 +465,8 @@ const Checkout: React.FC = () => {
                   className={cn(
                     "flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all",
                     paymentMethod === 'card'
-                      ? "border-coral bg-coral-light"
-                      : "border-border hover:border-coral/50"
+                      ? "border-primary bg-primary-light"
+                      : "border-border hover:border-primary/50"
                   )}
                 >
                   <input
@@ -454,8 +487,8 @@ const Checkout: React.FC = () => {
                   className={cn(
                     "flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all",
                     paymentMethod === 'upi'
-                      ? "border-coral bg-coral-light"
-                      : "border-border hover:border-coral/50"
+                      ? "border-primary bg-primary-light"
+                      : "border-border hover:border-primary/50"
                   )}
                 >
                   <input
@@ -519,7 +552,7 @@ const Checkout: React.FC = () => {
                 </div>
               ) : (
                 <div className="mb-4 text-sm text-muted-foreground">
-                  No coupon applied. <Link to="/cart" className="text-coral underline">Go to Cart</Link> to apply.
+                  No coupon applied. <Link to="/cart" className="text-primary underline">Go to Cart</Link> to apply.
                 </div>
               )}
 
@@ -545,7 +578,7 @@ const Checkout: React.FC = () => {
 
               <div className="flex justify-between py-4">
                 <span className="font-display font-bold text-foreground">Total</span>
-                <span className="text-xl font-bold text-coral">₹{grandTotal}</span>
+                <span className="text-xl font-bold text-primary">₹{grandTotal}</span>
               </div>
 
               <Button

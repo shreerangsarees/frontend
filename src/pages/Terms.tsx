@@ -18,7 +18,7 @@ const Terms: React.FC = () => {
                         <section className="mb-8">
                             <h2 className="text-xl font-bold mb-4">1. Acceptance of Terms</h2>
                             <p className="text-muted-foreground mb-4">
-                                By accessing and using T-Mart Express, you accept and agree to be bound by these Terms and Conditions.
+                                By accessing and using Shreerang Saree, you accept and agree to be bound by these Terms and Conditions.
                                 If you do not agree to these terms, please do not use our services.
                             </p>
                         </section>
@@ -42,8 +42,8 @@ const Terms: React.FC = () => {
                         <section className="mb-8">
                             <h2 className="text-xl font-bold mb-4">4. Delivery</h2>
                             <p className="text-muted-foreground mb-4">
-                                We aim to deliver your order within 30-45 minutes. Delivery times may vary based on location,
-                                weather conditions, and order volume. Free delivery is available on orders above ₹499.
+                                We aim to deliver your order within 3-5 business days. Delivery times may vary based on location
+                                and availability. Free delivery is available on orders above ₹1999.
                             </p>
                         </section>
 
@@ -59,8 +59,8 @@ const Terms: React.FC = () => {
                             <h2 className="text-xl font-bold mb-4">6. Contact Us</h2>
                             <p className="text-muted-foreground mb-4">
                                 For any queries regarding these terms, please contact us at:<br />
-                                Phone: 7096867438<br />
-                                Email: support@tmart.com
+                                Phone: +91 98765 43210<br />
+                                Email: support@shreerangsaree.com
                             </p>
                         </section>
                     </div>

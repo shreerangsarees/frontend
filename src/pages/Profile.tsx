@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { User, Mail, Lock, Phone, Save, Loader2, MapPin } from 'lucide-react';
+import { User, Mail, Lock, Phone, Save, Loader2, MapPin, Plus, Trash2, X, Package, ArrowRight, Bell, Edit, Check, Star } from 'lucide-react';
+import { useNotifications } from '@/context/NotificationContext';
 import Layout from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,11 +9,25 @@ import { toast } from 'sonner';
 
 const Profile: React.FC = () => {
     const { user, refreshProfile, loading: authLoading } = useAuth();
+    const { requestPermission } = useNotifications();
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [loading, setLoading] = useState(false);
+
+    // Address State
+    const [showAddressForm, setShowAddressForm] = useState(false);
+    const [editingIndex, setEditingIndex] = useState<number | null>(null);
+    const [newAddress, setNewAddress] = useState({
+        label: '',
+        street: '',
+        city: '',
+        state: '',
+        zip: '',
+        phone: '',
+        is_default: false
+    });
 
     useEffect(() => {
         if (user) {
@@ -25,12 +40,15 @@ const Profile: React.FC = () => {
         e.preventDefault();
         setLoading(true);
         try {
+            const token = localStorage.getItem('tmart_token');
             const res = await fetch('/api/users/profile', {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
                 body: JSON.stringify({
                     name,
-                    // email is usually immutable or requires verification, skipping update for now
                     currentPassword: currentPassword || undefined,
                     newPassword: newPassword || undefined
                 })
@@ -52,7 +70,127 @@ const Profile: React.FC = () => {
         }
     };
 
-    if (authLoading) return <Layout><div className="flex justify-center py-20"><Loader2 className="animate-spin text-coral" /></div></Layout>;
+    const handleAddAddress = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        // Validation: Phone is now required
+        if (!newAddress.street || !newAddress.city || !newAddress.zip || !newAddress.phone) {
+            toast.error("Please fill in all required fields (Address, City, ZIP, Phone)");
+            return;
+        }
+
+        // Format full address cleanly (handle empty state)
+        const parts = [
+            newAddress.street,
+            newAddress.city,
+            newAddress.state,
+            newAddress.zip
+        ].filter(Boolean); // Remove empty strings
+
+        const full_address = parts.join(', ');
+
+        // Ensure compatibility with backend Address type
+        const addressToAdd = {
+            ...newAddress,
+            full_address,
+            pincode: newAddress.zip,
+        };
+
+        let updatedAddresses = [...(user?.addresses || [])];
+
+        // If setting as default, unset others first
+        if (addressToAdd.is_default) {
+            updatedAddresses = updatedAddresses.map(a => ({ ...a, is_default: false }));
+        }
+
+        if (editingIndex !== null) {
+            // Edit existing
+            updatedAddresses[editingIndex] = addressToAdd;
+        } else {
+            // Add new
+            // If it's the first address, make it default automatically
+            if (updatedAddresses.length === 0) {
+                addressToAdd.is_default = true;
+            }
+            updatedAddresses.push(addressToAdd);
+        }
+
+        const successMsg = editingIndex !== null ? "Address updated successfully" : "Address added successfully";
+        await updateAddresses(updatedAddresses, successMsg);
+
+        resetAddressForm();
+    };
+
+    const resetAddressForm = () => {
+        setShowAddressForm(false);
+        setEditingIndex(null);
+        setNewAddress({ label: '', street: '', city: '', state: '', zip: '', phone: '', is_default: false });
+    };
+
+    const handleEditAddress = (index: number) => {
+        if (!user?.addresses) return;
+        const addr = user.addresses[index];
+        setNewAddress({
+            label: addr.label || '',
+            street: addr.street || '',
+            city: addr.city || '',
+            state: addr.state || '',
+            zip: addr.zip || addr.pincode || '',
+            phone: addr.phone || '',
+            is_default: addr.is_default || false
+        });
+        setEditingIndex(index);
+        setShowAddressForm(true);
+        // Scroll to form
+        window.scrollTo({ top: 300, behavior: 'smooth' });
+    };
+
+    const handleSetDefaultAddress = async (index: number) => {
+        if (!user?.addresses) return;
+        const updatedAddresses = user.addresses.map((addr, i) => ({
+            ...addr,
+            is_default: i === index
+        }));
+        await updateAddresses(updatedAddresses, "Default address updated");
+    };
+
+    const handleDeleteAddress = async (index: number) => {
+        if (!user?.addresses) return;
+        const updatedAddresses = user.addresses.filter((_, i) => i !== index);
+        await updateAddresses(updatedAddresses, "Address removed");
+    };
+
+    const updateAddresses = async (addresses: any[], successMessage: string) => {
+        try {
+            const token = localStorage.getItem('tmart_token');
+            const payload = { addresses };
+            console.log("Sending address update:", payload);
+
+            const res = await fetch('/api/users/profile', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                toast.success(successMessage);
+                await refreshProfile();
+            } else {
+                console.error("Address update error response:", data);
+                toast.error(data.message || `Failed to update: ${res.statusText}`);
+            }
+        } catch (error: any) {
+            console.error("Network error updating address:", error);
+            toast.error(error.message || "Network error");
+        }
+    };
+
+    if (authLoading) return <Layout><div className="flex justify-center py-20"><Loader2 className="animate-spin text-primary" /></div></Layout>;
 
     if (!user) return <Layout><div className="text-center py-20">Please login to view profile</div></Layout>;
 
@@ -63,10 +201,14 @@ const Profile: React.FC = () => {
 
                 <div className="grid md:grid-cols-3 gap-8">
                     {/* Sidebar / Info Card */}
-                    <div className="md:col-span-1">
+                    <div className="md:col-span-1 space-y-6">
                         <div className="bg-card border border-border rounded-2xl p-6 text-center">
-                            <div className="w-24 h-24 bg-coral/10 text-coral rounded-full flex items-center justify-center mx-auto mb-4 text-3xl font-bold">
-                                {user.name?.[0]?.toUpperCase() || 'U'}
+                            <div className="w-24 h-24 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-4 text-3xl font-bold overflow-hidden">
+                                {user.photoURL ? (
+                                    <img src={user.photoURL} alt={user.name} className="w-full h-full object-cover" />
+                                ) : (
+                                    user.name?.[0]?.toUpperCase() || 'U'
+                                )}
                             </div>
                             <h2 className="text-xl font-bold text-foreground">{user.name}</h2>
                             <p className="text-muted-foreground text-sm mb-4">{user.email}</p>
@@ -75,33 +217,187 @@ const Profile: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Addresses Preview (Optional link) */}
-                        <div className="bg-card border border-border rounded-2xl p-6 mt-6">
+
+
+                        {/* My Orders Link */}
+                        <div className="bg-card border border-border rounded-2xl p-6">
                             <h3 className="font-bold mb-4 flex items-center gap-2">
-                                <MapPin className="h-4 w-4 text-coral" /> Saved Addresses
+                                <Package className="h-4 w-4 text-primary" /> Orders
                             </h3>
+                            <Button
+                                className="w-full justify-between"
+                                variant="outline"
+                                onClick={() => window.location.href = '/my-orders'}
+                            >
+                                View My Orders
+                                <ArrowRight className="h-4 w-4" />
+                            </Button>
+                        </div>
+
+                        {/* 
+                        <div className="bg-card border border-border rounded-2xl p-6">
+                             <h3 className="font-bold mb-4 flex items-center gap-2">
+                                <Bell className="h-4 w-4 text-primary" /> Notifications
+                            </h3>
+                            <div className="space-y-2 text-sm">
+                                <div className="flex justify-between">
+                                    <span className="text-muted-foreground">Permission:</span>
+                                    <span className={('Notification' in window && Notification.permission === 'granted') ? 'text-green-600 font-bold' : 'text-red-500'}>
+                                        {('Notification' in window) ? Notification.permission : 'unsupported'}
+                                    </span>
+                                </div>
+                                <div className="text-xs text-muted-foreground bg-muted p-2 rounded break-all">
+                                    {('Notification' in window && Notification.permission === 'granted' && navigator.serviceWorker?.controller) ? 'Service Worker Active' : 'SW Pending/Inactive'}
+                                </div>
+                                <Button size="sm" variant="outline" className="w-full mt-2" onClick={requestPermission}>
+                                    Test / Fix Permission
+                                </Button>
+                            </div>
+                        </div>
+                        */}
+                    </div>
+
+                    {/* Main Content Area */}
+                    <div className="md:col-span-2 space-y-8">
+
+                        {/* Address Management Section */}
+                        <div className="bg-card border border-border rounded-2xl p-4 sm:p-6 md:p-8">
+                            <div className="flex items-center justify-between mb-6">
+                                <h3 className="text-lg sm:text-xl font-bold flex items-center gap-2">
+                                    <MapPin className="h-5 w-5 text-primary" /> Saved Addresses
+                                </h3>
+                                <Button size="sm" variant="outline" onClick={() => setShowAddressForm(!showAddressForm)}>
+                                    {showAddressForm ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4 mr-2" />}
+                                    {showAddressForm ? 'Cancel' : 'Add Address'}
+                                </Button>
+                            </div>
+
+                            {/* Add Address Form */}
+                            {showAddressForm && (
+                                <form onSubmit={handleAddAddress} className="bg-muted/30 p-4 rounded-xl mb-6 border border-border animate-fade-in">
+                                    <h4 className="font-bold mb-3 text-sm">{editingIndex !== null ? 'Edit Address' : 'New Address'}</h4>
+                                    <div className="grid sm:grid-cols-2 gap-4 mb-4">
+                                        <Input
+                                            placeholder="Label (e.g. Home, Office)"
+                                            value={newAddress.label}
+                                            onChange={e => setNewAddress({ ...newAddress, label: e.target.value })}
+                                        />
+                                        <Input
+                                            placeholder="Phone Number"
+                                            required
+                                            value={newAddress.phone}
+                                            onChange={e => setNewAddress({ ...newAddress, phone: e.target.value })}
+                                        />
+                                        <Input
+                                            placeholder="Full Address *"
+                                            required
+                                            value={newAddress.street}
+                                            onChange={e => setNewAddress({ ...newAddress, street: e.target.value })}
+                                            className="sm:col-span-2"
+                                        />
+                                        <Input
+                                            placeholder="City *"
+                                            required
+                                            value={newAddress.city}
+                                            onChange={e => setNewAddress({ ...newAddress, city: e.target.value })}
+                                        />
+                                        <Input
+                                            placeholder="State"
+                                            value={newAddress.state}
+                                            onChange={e => setNewAddress({ ...newAddress, state: e.target.value })}
+                                        />
+                                        <Input
+                                            placeholder="ZIP Code *"
+                                            required
+                                            value={newAddress.zip}
+                                            onChange={e => setNewAddress({ ...newAddress, zip: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="flex items-center gap-2 mb-4">
+                                        <input
+                                            type="checkbox"
+                                            id="isDefault"
+                                            checked={newAddress.is_default}
+                                            onChange={e => setNewAddress({ ...newAddress, is_default: e.target.checked })}
+                                            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                        />
+                                        <label htmlFor="isDefault" className="text-sm font-medium">Set as default address</label>
+                                    </div>
+                                    <div className="flex justify-end gap-2">
+                                        <Button type="button" variant="ghost" size="sm" onClick={resetAddressForm}>Cancel</Button>
+                                        <Button type="submit" size="sm">Save Address</Button>
+                                    </div>
+                                </form>
+                            )}
+
+                            {/* Address List */}
                             {user.addresses && user.addresses.length > 0 ? (
-                                <ul className="space-y-3 text-sm">
+                                <div className="space-y-4">
                                     {user.addresses.map((addr, i) => (
-                                        <li key={i} className="text-muted-foreground pb-2 border-b border-border last:border-0 last:pb-0">
-                                            <span className="font-medium text-foreground block">{addr.label}</span>
-                                            {addr.city}
-                                        </li>
+                                        <div key={i} className={`flex flex-col sm:flex-row sm:items-start justify-between p-4 border rounded-xl transition-colors ${addr.is_default ? 'bg-primary/5 border-primary/20' : 'bg-muted/10 border-border hover:bg-muted/30'}`}>
+                                            <div className="mb-3 sm:mb-0">
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <span className="font-bold text-sm bg-primary/10 text-primary px-2 py-0.5 rounded">{addr.label || 'Home'}</span>
+                                                    {addr.is_default && (
+                                                        <span className="text-[10px] uppercase font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded-full flex items-center gap-1">
+                                                            <Check className="h-3 w-3" /> Default
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <p className="text-sm text-foreground/80 mb-1">
+                                                    {addr.full_address || `${addr.street}, ${addr.city}, ${addr.zip}`}
+                                                </p>
+                                                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                                    <Phone className="h-3 w-3" /> {addr.phone}
+                                                </p>
+                                            </div>
+                                            <div className="flex items-center gap-2 self-end sm:self-start">
+                                                {!addr.is_default && (
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="text-muted-foreground hover:text-primary h-8 px-2 text-xs"
+                                                        onClick={() => handleSetDefaultAddress(i)}
+                                                    >
+                                                        Make Default
+                                                    </Button>
+                                                )}
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10"
+                                                    onClick={() => handleEditAddress(i)}
+                                                >
+                                                    <Edit className="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-muted-foreground hover:text-red-600 hover:bg-red-50"
+                                                    onClick={() => handleDeleteAddress(i)}
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </div>
                                     ))}
-                                </ul>
+                                </div>
                             ) : (
-                                <p className="text-sm text-muted-foreground">No addresses saved.</p>
+                                <div className="text-center py-8 text-muted-foreground bg-muted/20 rounded-xl border border-dashed border-border">
+                                    <MapPin className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                                    <p>No addresses saved yet.</p>
+                                </div>
                             )}
                         </div>
 
                         {/* Support & Complaints Section */}
                         <div className="bg-card border border-border rounded-2xl p-6 mt-6">
                             <h3 className="font-bold mb-4 flex items-center gap-2">
-                                <Phone className="h-4 w-4 text-coral" /> Support & Help
+                                <Phone className="h-4 w-4 text-primary" /> Support & Help
                             </h3>
                             <div className="space-y-3">
                                 <a
-                                    href="tel:7096867438"
+                                    href="tel:9137554336"
                                     className="flex items-center gap-3 p-3 bg-muted/50 rounded-xl hover:bg-muted transition-colors"
                                 >
                                     <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
@@ -109,12 +405,12 @@ const Profile: React.FC = () => {
                                     </div>
                                     <div>
                                         <p className="font-medium text-foreground">Call Support</p>
-                                        <p className="text-sm text-muted-foreground">7096867438</p>
+                                        <p className="text-sm text-muted-foreground">9137554336</p>
                                     </div>
                                 </a>
 
                                 <a
-                                    href="https://wa.me/917096867438"
+                                    href="https://wa.me/919137554336"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="flex items-center gap-3 p-3 bg-muted/50 rounded-xl hover:bg-muted transition-colors"
@@ -131,26 +427,24 @@ const Profile: React.FC = () => {
                                 </a>
 
                                 <a
-                                    href="mailto:support@tmart.com?subject=Customer Complaint"
+                                    href="mailto:support@shreerangsaree.com"
                                     className="flex items-center gap-3 p-3 bg-muted/50 rounded-xl hover:bg-muted transition-colors"
                                 >
-                                    <div className="h-10 w-10 rounded-full bg-coral/10 flex items-center justify-center">
-                                        <Mail className="h-5 w-5 text-coral" />
+                                    <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                                        <Mail className="h-5 w-5 text-blue-600" />
                                     </div>
                                     <div>
-                                        <p className="font-medium text-foreground">File a Complaint</p>
-                                        <p className="text-sm text-muted-foreground">Email our team</p>
+                                        <p className="font-medium text-foreground">Email Support</p>
+                                        <p className="text-sm text-muted-foreground">support@shreerangsaree.com</p>
                                     </div>
                                 </a>
                             </div>
                         </div>
-                    </div>
 
-                    {/* Edit Form */}
-                    <div className="md:col-span-2">
-                        <div className="bg-card border border-border rounded-2xl p-8">
-                            <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-                                <User className="h-5 w-5 text-coral" /> Edit Details
+                        {/* Edit Profile Form */}
+                        <div className="bg-card border border-border rounded-2xl p-4 sm:p-6 md:p-8">
+                            <h2 className="text-lg sm:text-xl font-bold mb-6 flex items-center gap-2">
+                                <User className="h-5 w-5 text-primary" /> Edit Details
                             </h2>
 
                             <form onSubmit={handleUpdateProfile} className="space-y-6">

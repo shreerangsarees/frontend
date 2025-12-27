@@ -59,7 +59,7 @@ const Categories: React.FC = () => {
                   )}
                 </div>
                 <div className="p-4 text-center">
-                  <h3 className="font-bold text-foreground group-hover:text-coral transition-colors mb-1">
+                  <h3 className="font-bold text-foreground group-hover:text-primary transition-colors mb-1">
                     {category.name}
                   </h3>
                   <p className="text-sm text-muted-foreground">

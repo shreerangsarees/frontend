@@ -12,12 +12,6 @@ const developers = [
         role: 'Full Stack Developer',
         linkedin: 'https://www.linkedin.com/in/abhijeetrogye/',
         avatar: 'AR'
-    },
-    {
-        name: 'Dhiraj Chaudhari',
-        role: 'Full Stack Developer',
-        linkedin: 'https://www.linkedin.com/in/dhirajchaudhari20/',
-        avatar: 'DC'
     }
 ];
 
@@ -52,12 +46,12 @@ const Contact: React.FC = () => {
                 <div className="max-w-4xl mx-auto">
                     {/* Header */}
                     <div className="text-center mb-12">
-                        <div className="inline-flex items-center justify-center w-16 h-16 bg-coral/10 rounded-full mb-4">
-                            <Code className="h-8 w-8 text-coral" />
+                        <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-4">
+                            <Code className="h-8 w-8 text-primary" />
                         </div>
                         <h1 className="text-3xl font-display font-bold text-foreground mb-4">Meet the Developers</h1>
                         <p className="text-muted-foreground max-w-lg mx-auto">
-                            T-Mart Express was crafted with <Heart className="inline h-4 w-4 text-coral" /> by talented developers.
+                            Shreerang Saree was crafted with <Heart className="inline h-4 w-4 text-primary" /> by talented developers.
                             Connect with us on LinkedIn!
                         </p>
                     </div>
@@ -70,14 +64,14 @@ const Contact: React.FC = () => {
                                 href={dev.linkedin}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="group bg-card border border-border rounded-2xl p-6 hover:border-coral/50 hover:shadow-lg transition-all"
+                                className="group bg-card border border-border rounded-2xl p-6 hover:border-primary/50 hover:shadow-lg transition-all"
                             >
                                 <div className="flex items-center gap-4">
-                                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-coral to-coral/60 flex items-center justify-center text-white font-bold text-xl">
+                                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-xl">
                                         {dev.avatar}
                                     </div>
                                     <div className="flex-1">
-                                        <h3 className="text-lg font-bold text-foreground group-hover:text-coral transition-colors">
+                                        <h3 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">
                                             {dev.name}
                                         </h3>
                                         <p className="text-sm text-muted-foreground">{dev.role}</p>
@@ -138,7 +132,7 @@ const Contact: React.FC = () => {
                                     placeholder="Your message here..."
                                     rows={5}
                                     required
-                                    className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-coral/50 resize-none"
+                                    className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
                                 />
                             </div>
 

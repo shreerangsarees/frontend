@@ -3,14 +3,15 @@ import { ArrowRight, Clock, Truck, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useSettings } from '@/context/SettingsContext';
+import heroImage from '@/assets/hero-shreerang.jpg';
 
 const HeroSection: React.FC = () => {
   const { deliveryFee, storeName } = useSettings();
 
   const features = [
-    { icon: Clock, text: '30-45 mins', label: 'Fast Delivery' },
-    { icon: Truck, text: `₹${deliveryFee}`, label: 'Delivery Fee' },
-    { icon: ShieldCheck, text: 'Fresh', label: 'Quality Guaranteed' },
+    { icon: Clock, text: '3-5 Days', label: 'Fast Shipping' },
+    { icon: Truck, text: deliveryFee === 0 ? 'Free' : `₹${deliveryFee}`, label: 'Shipping Fee' },
+    { icon: ShieldCheck, text: 'Premium', label: 'Quality Assured' },
   ];
 
   return (
@@ -20,28 +21,28 @@ const HeroSection: React.FC = () => {
           {/* Content */}
           <div className="relative z-10 text-center lg:text-left">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 bg-coral-light text-coral px-4 py-1.5 rounded-full text-sm font-medium mb-6 animate-fade-in">
-              <span className="h-2 w-2 bg-coral rounded-full animate-pulse" />
-              Now delivering in your area
+            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-1.5 rounded-full text-sm font-medium mb-6 animate-fade-in">
+              <span className="h-2 w-2 bg-primary rounded-full animate-pulse" />
+              New Collection Available
             </div>
 
             {/* Headline */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display font-bold text-foreground mb-4 animate-fade-in stagger-1">
-              Fresh Groceries
-              <span className="block gradient-text">Delivered Fast</span>
+              Elegant Sarees
+              <span className="block gradient-text">For Every Occasion</span>
             </h1>
 
             {/* Description */}
             <p className="text-lg text-muted-foreground max-w-lg mx-auto lg:mx-0 mb-8 animate-fade-in stagger-2">
-              Get the freshest groceries from {storeName} delivered to your doorstep in just 30-45 mins.
-              Shop from a wide variety of products.
+              Discover exquisite sarees from {storeName} - from traditional silk to modern designer wear.
+              Celebrate every moment in timeless elegance.
             </p>
 
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start animate-fade-in stagger-3">
               <Link to="/products">
                 <Button variant="hero" size="xl" className="w-full sm:w-auto group">
-                  Start Shopping
+                  Explore Collection
                   <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
                 </Button>
               </Link>
@@ -53,15 +54,15 @@ const HeroSection: React.FC = () => {
             </div>
 
             {/* Features */}
-            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-6 mt-10 animate-fade-in stagger-4">
+            <div className="flex flex-row items-center justify-between lg:justify-start gap-2 sm:gap-6 mt-8 sm:mt-10 animate-fade-in stagger-4 w-full sm:w-auto">
               {features.map((feature, index) => (
-                <div key={index} className="flex items-center gap-2">
-                  <div className="h-10 w-10 rounded-xl bg-card flex items-center justify-center shadow-sm">
-                    <feature.icon className="h-5 w-5 text-coral" />
+                <div key={index} className="flex flex-col sm:flex-row items-center sm:gap-3 text-center sm:text-left flex-1 sm:flex-none">
+                  <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-xl bg-card flex items-center justify-center shadow-sm mb-1 sm:mb-0">
+                    <feature.icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-foreground">{feature.text}</p>
-                    <p className="text-xs text-muted-foreground">{feature.label}</p>
+                    <p className="text-xs sm:text-sm font-semibold text-foreground whitespace-nowrap">{feature.text}</p>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground whitespace-nowrap">{feature.label}</p>
                   </div>
                 </div>
               ))}
@@ -69,43 +70,20 @@ const HeroSection: React.FC = () => {
           </div>
 
           {/* Hero image */}
-          <div className="relative hidden lg:block">
+          <div className="relative block mt-12 lg:mt-0">
             <div className="relative z-10 animate-float">
               <img
-                src="https://images.unsplash.com/photo-1542838132-92c53300491e?w=600"
-                alt="Fresh groceries"
+                src={heroImage}
+                alt="Beautiful Indian Saree"
                 className="w-full max-w-md mx-auto rounded-3xl shadow-2xl"
               />
             </div>
 
-            {/* Floating cards */}
-            <div className="absolute -left-4 top-1/4 z-20 bg-card rounded-2xl shadow-lg p-4 animate-bounce-soft">
-              <div className="flex items-center gap-3">
-                <div className="h-12 w-12 rounded-xl bg-teal-light flex items-center justify-center">
-                  <span className="text-2xl">🥬</span>
-                </div>
-                <div>
-                  <p className="font-semibold text-foreground">Fresh Veggies</p>
-                  <p className="text-sm text-muted-foreground">45+ items</p>
-                </div>
-              </div>
-            </div>
 
-            <div className="absolute -right-4 bottom-1/4 z-20 bg-card rounded-2xl shadow-lg p-4 animate-bounce-soft" style={{ animationDelay: '0.5s' }}>
-              <div className="flex items-center gap-3">
-                <div className="h-12 w-12 rounded-xl bg-golden-light flex items-center justify-center">
-                  <span className="text-2xl">🥛</span>
-                </div>
-                <div>
-                  <p className="font-semibold text-foreground">Dairy Fresh</p>
-                  <p className="text-sm text-muted-foreground">32+ items</p>
-                </div>
-              </div>
-            </div>
 
             {/* Decorative blobs */}
-            <div className="absolute -z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-coral/10 rounded-full blur-3xl" />
-            <div className="absolute -z-10 bottom-0 right-0 w-64 h-64 bg-teal/10 rounded-full blur-3xl" />
+            <div className="absolute -z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
+            <div className="absolute -z-10 bottom-0 right-0 w-64 h-64 bg-secondary/10 rounded-full blur-3xl" />
           </div>
         </div>
       </div>

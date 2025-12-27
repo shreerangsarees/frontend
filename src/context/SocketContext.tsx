@@ -18,8 +18,12 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const [isConnected, setIsConnected] = useState(false);
 
     useEffect(() => {
+        // Detect URL from env or default to relative path
+        const apiUrl = import.meta.env.VITE_API_URL || '/api';
+        const socketUrl = apiUrl.endsWith('/api') ? apiUrl.replace('/api', '') : apiUrl;
+
         // Connect to the server
-        const socketInstance = io('http://localhost:5000', {
+        const socketInstance = io(socketUrl, {
             withCredentials: true,
             transports: ['websocket', 'polling']
         });

@@ -3,9 +3,14 @@ import { Plus, Search, Edit, Trash2, X, Loader2, Save } from 'lucide-react';
 import AdminLayout from './AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/context/AuthContext';
+import { useSocket } from '@/context/SocketContext';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import ImageUpload from '@/components/ui/ImageUpload';
+
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 interface Product {
   id: string;
@@ -13,7 +18,10 @@ interface Product {
   description: string | null;
   price: number;
   image: string | null;
+  images?: string[];
+  colors?: string[];
   category: string;
+  categories?: string[];
   stock: number;
   unit: string;
   isAvailable: boolean;
@@ -27,6 +35,7 @@ interface Category {
 
 const AdminProducts: React.FC = () => {
   const { user, loading: authLoading } = useAuth();
+  const { socket } = useSocket();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,21 +44,82 @@ const AdminProducts: React.FC = () => {
   // Product Modal State
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [productImage, setProductImage] = useState(''); // For ImageUpload
+  const [productImages, setProductImages] = useState<string[]>([]); // For Gallery Images
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
   // Category Modal State
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newCategoryImage, setNewCategoryImage] = useState('');
 
+  // Read URL params for actions
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [filter, setFilter] = useState('all');
+
   useEffect(() => {
     fetchProducts();
     fetchCategories();
   }, []);
 
+  // Sync URL filter to state
+  useEffect(() => {
+    const filterParam = searchParams.get('filter');
+    if (filterParam) {
+      setFilter(filterParam);
+    }
+  }, [searchParams]);
+
+  const handleFilterChange = (value: string) => {
+    setFilter(value);
+    // Update URL without refreshing
+    setSearchParams(prev => {
+      if (value === 'all') {
+        prev.delete('filter');
+      } else {
+        prev.set('filter', value);
+      }
+      return prev;
+    });
+  };
+
+  // Check for direct add action from URL
+  useEffect(() => {
+    if (searchParams.get('action') === 'add') {
+      setEditingProduct(null);
+      setProductImage('');
+      setProductImages([]);
+      setSelectedCategories([]);
+      setShowModal(true);
+    }
+  }, [searchParams]);
+
+  // Real-time updates via Socket.io
+  useEffect(() => {
+    if (socket) {
+      socket.on('productCreated', () => fetchProducts());
+      socket.on('productUpdated', () => fetchProducts());
+      socket.on('productDeleted', () => fetchProducts());
+      socket.on('categoryCreated', () => fetchCategories());
+
+      return () => {
+        socket.off('productCreated');
+        socket.off('productUpdated');
+        socket.off('productDeleted');
+        socket.off('categoryCreated');
+      };
+    }
+  }, [socket]);
+
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/products');
+      const token = localStorage.getItem('tmart_token');
+      const res = await fetch('/api/products', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       if (res.ok) {
         const data = await res.json();
         const mapped = data.map((p: any) => ({
@@ -69,7 +139,10 @@ const AdminProducts: React.FC = () => {
 
   const fetchCategories = async () => {
     try {
-      const res = await fetch('/api/categories');
+      const token = localStorage.getItem('tmart_token');
+      const res = await fetch('/api/categories', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
       if (res.ok) {
         setCategories(await res.json());
       }
@@ -81,9 +154,13 @@ const AdminProducts: React.FC = () => {
   const handleCreateCategory = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const token = localStorage.getItem('tmart_token');
       const res = await fetch('/api/categories', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
           name: newCategoryName,
           image: newCategoryImage,
@@ -114,12 +191,19 @@ const AdminProducts: React.FC = () => {
       const form = e.target as HTMLFormElement;
       const formData = new FormData(form);
 
+      // Parse colors from comma-separated input
+      const colorsStr = formData.get('colors')?.toString() || '';
+      const colorsArray = colorsStr.split(',').map(s => s.trim()).filter(Boolean);
+
       const payload = {
         name: formData.get('name'),
         description: formData.get('description'),
         price: Number(formData.get('price')),
-        image: formData.get('image'),
-        category: formData.get('category'),
+        image: productImage || formData.get('image'), // Use state or fallback
+        images: productImages.filter(url => url.trim().length > 0), // Use state for gallery images, filtering empty
+        colors: colorsArray,
+        category: selectedCategories[0] || 'General', // Primary category for backwards compat
+        categories: selectedCategories.length > 0 ? selectedCategories : ['General'],
         stock: Number(formData.get('stock')),
         unit: formData.get('unit') || 'piece',
         isAvailable: true // Default to true for now
@@ -131,9 +215,13 @@ const AdminProducts: React.FC = () => {
 
       const method = editingProduct ? 'PUT' : 'POST';
 
+      const token = localStorage.getItem('tmart_token');
       const res = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify(payload)
       });
 
@@ -156,7 +244,11 @@ const AdminProducts: React.FC = () => {
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this product?')) return;
     try {
-      const res = await fetch(`/api/products/${id}`, { method: 'DELETE' });
+      const token = localStorage.getItem('tmart_token');
+      const res = await fetch(`/api/products/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
       if (!res.ok) throw new Error('Failed to delete');
       toast.success('Product deleted');
       fetchProducts();
@@ -166,9 +258,18 @@ const AdminProducts: React.FC = () => {
     }
   };
 
-  const filteredProducts = products.filter(p =>
-    p.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredProducts = products.filter(p => {
+    const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
+
+    if (!matchesSearch) return false;
+
+    if (filter === 'lowStock') return p.stock > 0 && p.stock <= 5;
+    if (filter === 'outOfStock') return p.stock === 0;
+    if (filter === 'active') return p.isAvailable;
+    if (filter === 'unavailable') return !p.isAvailable;
+
+    return true;
+  });
 
   if (authLoading) return <div>Loading...</div>;
 
@@ -179,25 +280,79 @@ const AdminProducts: React.FC = () => {
           <h1 className="text-2xl font-bold font-display">Products</h1>
           <p className="text-muted-foreground">{products.length} items</p>
         </div>
-        <Button onClick={() => { setEditingProduct(null); setShowModal(true); }}>
+        <Button onClick={() => { setEditingProduct(null); setProductImage(''); setProductImages([]); setSelectedCategories([]); setShowModal(true); }}>
           <Plus className="mr-2 h-4 w-4" /> Add Product
         </Button>
       </div>
 
       <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-border flex gap-4">
+        <div className="p-4 border-b border-border flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search products..."
+              placeholder="Search sarees..."
               className="pl-9"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
+          <select
+            className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            value={filter}
+            onChange={(e) => handleFilterChange(e.target.value)}
+          >
+            <option value="all">All Products</option>
+            <option value="active">Active</option>
+            <option value="unavailable">Unavailable</option>
+            <option value="lowStock">Low Stock</option>
+            <option value="outOfStock">Out of Stock</option>
+          </select>
         </div>
 
-        <div className="overflow-x-auto">
+        {/* Mobile Card Layout */}
+        <div className="md:hidden divide-y divide-border">
+          {loading ? (
+            <div className="p-8 text-center"><Loader2 className="animate-spin h-6 w-6 mx-auto" /></div>
+          ) : filteredProducts.length === 0 ? (
+            <div className="p-8 text-center text-muted-foreground">No products found</div>
+          ) : (
+            filteredProducts.map(product => (
+              <div key={product.id} className="p-4 space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="h-16 w-16 rounded-lg bg-muted flex-shrink-0 overflow-hidden">
+                    {product.image ? (
+                      <img src={product.image} alt={product.name} className="h-full w-full object-cover" />
+                    ) : <span className="text-xs flex items-center justify-center h-full">IMG</span>}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-foreground truncate">{product.name}</p>
+                    <p className="text-sm text-muted-foreground">{product.category}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="font-bold">₹{product.price}</span>
+                      <span className="text-xs text-muted-foreground">Stock: {product.stock}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className={cn("px-2 py-1 rounded-full text-xs font-medium", product.isAvailable ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700")}>
+                    {product.isAvailable ? 'Active' : 'Unavailable'}
+                  </span>
+                  <div className="flex gap-1">
+                    <Button variant="ghost" size="sm" onClick={() => { setEditingProduct(product); setProductImage(product.image || ''); setProductImages(product.images || []); setSelectedCategories(product.categories || [product.category]); setShowModal(true); }}>
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="sm" className="text-destructive" onClick={() => handleDelete(product.id)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Desktop Table Layout */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-sm text-left">
             <thead className="bg-muted/50 text-muted-foreground font-medium">
               <tr>
@@ -238,7 +393,7 @@ const AdminProducts: React.FC = () => {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <Button variant="ghost" size="icon" onClick={() => { setEditingProduct(product); setShowModal(true); }}>
+                      <Button variant="ghost" size="icon" onClick={() => { setEditingProduct(product); setProductImage(product.image || ''); setProductImages(product.images || []); setSelectedCategories(product.categories || [product.category]); setShowModal(true); }}>
                         <Edit className="h-4 w-4" />
                       </Button>
                       <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDelete(product.id)}>
@@ -273,39 +428,57 @@ const AdminProducts: React.FC = () => {
                   <Input name="description" placeholder="Product Description" defaultValue={editingProduct?.description || ''} required />
                 </div>
 
-                <div>
-                  <label className="text-sm font-medium mb-1 block">Category</label>
-                  <div className="flex gap-2">
-                    <select
-                      name="category"
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                      defaultValue={editingProduct?.category || (categories.length > 0 ? categories[0].name : 'General')}
-                    >
-                      {/* Always show product's current category first if editing */}
-                      {editingProduct?.category && !categories.find(c => c.name === editingProduct.category) && (
-                        <option value={editingProduct.category}>{editingProduct.category}</option>
-                      )}
-                      {/* Show categories from database */}
-                      {categories.map((cat) => (
-                        <option key={cat._id} value={cat.name}>{cat.name}</option>
-                      ))}
-                      {/* Fallback options if no categories exist */}
-                      {categories.length === 0 && (
-                        <>
-                          <option value="General">General</option>
-                          <option value="Vegetables">Vegetables</option>
-                          <option value="Fruits">Fruits</option>
-                          <option value="Dairy">Dairy</option>
-                          <option value="Bakery">Bakery</option>
-                          <option value="Beverages">Beverages</option>
-                          <option value="Snacks">Snacks</option>
-                        </>
-                      )}
-                    </select>
-                    <Button type="button" size="icon" variant="outline" onClick={() => setShowCategoryModal(true)} title="Add New Category">
-                      <Plus className="h-4 w-4" />
-                    </Button>
+                <div className="col-span-2">
+                  <label className="text-sm font-medium mb-2 block">Categories (select all that apply)</label>
+                  <div className="flex flex-wrap gap-2 p-3 bg-muted/30 rounded-lg border border-border max-h-32 overflow-y-auto">
+                    {categories.length > 0 ? categories.map((cat) => (
+                      <label
+                        key={cat._id}
+                        className={cn(
+                          "flex items-center gap-2 px-3 py-1.5 rounded-full text-sm cursor-pointer transition-colors",
+                          selectedCategories.includes(cat.name)
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-background border border-border hover:border-primary"
+                        )}
+                      >
+                        <input
+                          type="checkbox"
+                          className="hidden"
+                          checked={selectedCategories.includes(cat.name)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedCategories([...selectedCategories, cat.name]);
+                            } else {
+                              setSelectedCategories(selectedCategories.filter(c => c !== cat.name));
+                            }
+                          }}
+                        />
+                        {cat.name}
+                      </label>
+                    )) : (
+                      <span className="text-sm text-muted-foreground">No categories. Create one first.</span>
+                    )}
                   </div>
+                  <div className="flex items-center gap-2 mt-2">
+                    <Button type="button" size="sm" variant="outline" onClick={() => setShowCategoryModal(true)}>
+                      <Plus className="h-3 w-3 mr-1" /> Add Category
+                    </Button>
+                    {selectedCategories.length > 0 && (
+                      <span className="text-xs text-muted-foreground">
+                        Selected: {selectedCategories.join(', ')}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="col-span-2">
+                  <label className="text-sm font-medium mb-1 block">Available Colors</label>
+                  <Input
+                    name="colors"
+                    placeholder="Red, Maroon, Golden, Navy Blue"
+                    defaultValue={editingProduct?.colors?.join(', ') || ''}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">Enter color names separated by commas</p>
                 </div>
 
                 <div>
@@ -320,12 +493,50 @@ const AdminProducts: React.FC = () => {
 
                 <div>
                   <label className="text-sm font-medium mb-1 block">Unit</label>
-                  <Input name="unit" placeholder="kg, pc, bunch" defaultValue={editingProduct?.unit || 'kg'} required />
+                  <Input name="unit" placeholder="pc, set, meter" defaultValue={editingProduct?.unit || 'pc'} required />
                 </div>
 
                 <div className="col-span-2">
-                  <label className="text-sm font-medium mb-1 block">Image URL</label>
-                  <Input name="image" placeholder="https://..." defaultValue={editingProduct?.image || ''} required />
+                  <label className="text-sm font-medium mb-1 block">Primary Image</label>
+                  <ImageUpload
+                    value={productImage || editingProduct?.image || ''}
+                    onChange={(url) => setProductImage(url as string)}
+                    folder="products"
+                    aspectRatio="3/4"
+                    placeholder="Upload product image (3:4 ratio)"
+                  />
+                  <input type="hidden" name="image" value={productImage || editingProduct?.image || ''} />
+                </div>
+
+                <div className="col-span-2">
+                  <label className="text-sm font-medium mb-1 block">Gallery Images</label>
+                  <ImageUpload
+                    value={productImages}
+                    onChange={(val) => {
+                      if (Array.isArray(val)) setProductImages(val);
+                      else if (val) setProductImages([val]);
+                      else setProductImages([]);
+                    }}
+                    folder="products/gallery"
+                    aspectRatio="1/1"
+                    placeholder="Upload gallery images key"
+                    allowMultiple={true}
+                  />
+                  <input type="hidden" name="images" value={productImages.join(',')} />
+
+                  <div className="mt-3">
+                    <label className="text-xs font-semibold text-muted-foreground mb-1.5 block uppercase tracking-wider">Paste URLs (Separated by ';')</label>
+                    <Textarea
+                      placeholder="https://example.com/image1.jpg; https://example.com/image2.jpg"
+                      value={productImages.join(';')}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        const urls = val.split(';').map((u: string) => u.trim());
+                        setProductImages(urls);
+                      }}
+                      className="font-mono text-xs min-h-[80px]"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -349,7 +560,7 @@ const AdminProducts: React.FC = () => {
             <form onSubmit={handleCreateCategory} className="space-y-4">
               <div>
                 <label className="text-sm font-medium mb-1 block">Name</label>
-                <Input value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} placeholder="e.g. Spices" required />
+                <Input value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} placeholder="e.g. Banarasi" required />
               </div>
               <div>
                 <label className="text-sm font-medium mb-1 block">Image URL</label>

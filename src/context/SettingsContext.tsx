@@ -8,7 +8,7 @@ interface SettingsContextType {
 }
 
 const defaultSettings: SettingsContextType = {
-    storeName: 'T-Mart Express',
+    storeName: 'Shreerang Saree',
     deliveryFee: 40,
     minOrderFreeDelivery: 499,
     loading: true,
