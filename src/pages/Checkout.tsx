@@ -10,6 +10,9 @@ import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { storeInfo } from '@/lib/store';
 import { toast } from 'sonner';
+
+// Constants
+const MAX_QUANTITY_PER_ITEM = 10;
 import { cn } from '@/lib/utils';
 import { Address } from '@/types';
 import api from '@/api/axios';
@@ -79,6 +82,18 @@ const Checkout: React.FC = () => {
     e.preventDefault();
     if (!newAddress.label || !newAddress.full_address || !newAddress.city || !newAddress.pincode || !newAddress.phone) {
       toast.error('Please fill in all fields');
+      return;
+    }
+
+    // Validate pincode (6 digits for India)
+    if (!/^\d{6}$/.test(newAddress.pincode)) {
+      toast.error('Pincode must be exactly 6 digits');
+      return;
+    }
+
+    // Validate phone (10 digits)
+    if (!/^\d{10}$/.test(newAddress.phone)) {
+      toast.error('Phone number must be exactly 10 digits');
       return;
     }
 
@@ -236,7 +251,7 @@ const Checkout: React.FC = () => {
             contact: ""
           },
           theme: {
-            color: "#FF6B00"
+            color: "#800020" // Shreerang maroon theme
           }
         };
 

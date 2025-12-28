@@ -235,6 +235,13 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return false;
     }
 
+    // Check maximum quantity per item limit
+    const MAX_QTY = 10;
+    if (totalProductQty + 1 > MAX_QTY) {
+      toast.error(`Maximum ${MAX_QTY} items allowed per product`);
+      return false;
+    }
+
     dispatch({ type: 'ADD_ITEM', payload: product });
     toast.success('Item added to cart');
     return true;
@@ -327,3 +334,6 @@ export const useCart = (): CartContextType => {
   }
   return context;
 };
+
+// Maximum quantity per item to prevent abuse
+export const MAX_QUANTITY_PER_ITEM = 10;

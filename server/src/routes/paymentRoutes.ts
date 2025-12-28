@@ -67,7 +67,7 @@ router.post('/verify-payment', protect, async (req, res) => {
             orderDetails
         } = req.body;
 
-        const { items: orderItems, shippingAddress, totalAmount } = orderDetails || {};
+        const { items: orderItems, shippingAddress, totalAmount, deliveryFee, discount } = orderDetails || {};
 
         const sign = razorpay_order_id + '|' + razorpay_payment_id;
         const expectedSign = crypto
@@ -96,7 +96,8 @@ router.post('/verify-payment', protect, async (req, res) => {
                         name: product.name,
                         image: product.image || '',
                         quantity: item.quantity,
-                        price: product.price
+                        price: product.price,
+                        selectedColor: item.selectedColor // Include selected color
                     });
                 }
             }
@@ -105,6 +106,8 @@ router.post('/verify-payment', protect, async (req, res) => {
                 user: req.user.uid,
                 items: finalItems,
                 totalAmount,
+                deliveryFee: deliveryFee || 0,
+                discount: discount || 0,
                 shippingAddress,
                 paymentMethod: 'Razorpay',
                 paymentInfo: {
@@ -113,23 +116,28 @@ router.post('/verify-payment', protect, async (req, res) => {
                 }
             });
 
-            // Update stock and handle Wishlist removal
+            // Update stock and handle Wishlist removal with error handling
             for (const item of orderItems) {
-                const productId = item.product.id || item.product;
-                const product = await Product.findById(productId);
+                try {
+                    const productId = item.product.id || item.product;
+                    const product = await Product.findById(productId);
 
-                if (product) {
-                    await Product.update(productId, {
-                        stock: Math.max(0, product.stock - item.quantity),
-                        salesCount: (product.salesCount || 0) + item.quantity
-                    });
-                }
+                    if (product) {
+                        await Product.update(productId, {
+                            stock: Math.max(0, product.stock - item.quantity),
+                            salesCount: (product.salesCount || 0) + item.quantity
+                        });
+                    }
 
-                // Remove from wishlist if present
-                const user = await User.findById(req.user.uid);
-                if (user && user.wishlist && user.wishlist.includes(productId)) {
-                    const newWishlist = user.wishlist.filter(id => id !== productId);
-                    await User.update(req.user.uid, { wishlist: newWishlist });
+                    // Remove from wishlist if present
+                    const user = await User.findById(req.user.uid);
+                    if (user && user.wishlist && user.wishlist.includes(productId)) {
+                        const newWishlist = user.wishlist.filter(id => id !== productId);
+                        await User.update(req.user.uid, { wishlist: newWishlist });
+                    }
+                } catch (err) {
+                    console.error(`Error updating stock/wishlist for product ${item.product}:`, err);
+                    // Continue with other items even if one fails
                 }
             }
 
@@ -193,7 +201,7 @@ router.post('/verify-payment', protect, async (req, res) => {
 // COD Order
 router.post('/cod-order', protect, async (req, res) => {
     try {
-        const { orderItems, shippingAddress, totalAmount } = req.body;
+        const { orderItems, shippingAddress, totalAmount, deliveryFee, discount } = req.body;
 
         const finalItems = [];
         for (const item of orderItems) {
@@ -202,7 +210,8 @@ router.post('/cod-order', protect, async (req, res) => {
                 name: item.name || item.product.name,
                 image: item.image || item.product.image,
                 quantity: item.quantity,
-                price: item.price
+                price: item.price,
+                selectedColor: item.selectedColor // Include selected color
             });
         }
 
@@ -210,25 +219,32 @@ router.post('/cod-order', protect, async (req, res) => {
             user: req.user.uid,
             items: finalItems,
             totalAmount,
+            deliveryFee: deliveryFee || 0,
+            discount: discount || 0,
             shippingAddress,
             paymentMethod: 'COD'
         });
 
-        // Update stock
+        // Update stock with error handling
         for (const item of orderItems) {
-            const productId = item.product.id || item.product;
-            const product = await Product.findById(productId);
-            if (product) {
-                await Product.update(productId, {
-                    stock: Math.max(0, product.stock - item.quantity),
-                    salesCount: (product.salesCount || 0) + item.quantity
-                });
-            }
-            // Remove from wishlist
-            const user = await User.findById(req.user.uid);
-            if (user && user.wishlist && user.wishlist.includes(productId)) {
-                const newWishlist = user.wishlist.filter(id => id !== productId);
-                await User.update(req.user.uid, { wishlist: newWishlist });
+            try {
+                const productId = item.product.id || item.product;
+                const product = await Product.findById(productId);
+                if (product) {
+                    await Product.update(productId, {
+                        stock: Math.max(0, product.stock - item.quantity),
+                        salesCount: (product.salesCount || 0) + item.quantity
+                    });
+                }
+                // Remove from wishlist
+                const user = await User.findById(req.user.uid);
+                if (user && user.wishlist && user.wishlist.includes(productId)) {
+                    const newWishlist = user.wishlist.filter(id => id !== productId);
+                    await User.update(req.user.uid, { wishlist: newWishlist });
+                }
+            } catch (err) {
+                console.error(`Error updating stock/wishlist for product ${item.product}:`, err);
+                // Continue with other items
             }
         }
 

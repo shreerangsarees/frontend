@@ -155,6 +155,12 @@ router.post('/', protect, admin, async (req, res) => {
 // Update product
 router.put('/:id', protect, admin, async (req, res) => {
     try {
+        // Check if product exists
+        const existing = await Product.findById(req.params.id);
+        if (!existing) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+
         const updatedProduct = await Product.update(req.params.id, req.body);
         if (io) io.emit('productUpdated', updatedProduct);
         res.json(updatedProduct);
@@ -166,6 +172,12 @@ router.put('/:id', protect, admin, async (req, res) => {
 // Delete product
 router.delete('/:id', protect, admin, async (req, res) => {
     try {
+        // Check if product exists
+        const existing = await Product.findById(req.params.id);
+        if (!existing) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+
         await Product.delete(req.params.id);
         if (io) io.emit('productDeleted', { productId: req.params.id });
         res.json({ message: 'Product deleted' });
