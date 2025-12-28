@@ -2,6 +2,18 @@ import { db } from '../config/firebase';
 
 const collection = db.collection('orders');
 
+export type OrderStatus =
+    | 'Pending'
+    | 'Processing'
+    | 'Shipped'
+    | 'Out for Delivery'
+    | 'Delivered'
+    | 'Cancelled'
+    | 'Return Requested'
+    | 'Replacement Requested'
+    | 'Returned'
+    | 'Refunded';
+
 export interface IOrder {
     _id?: string;
     user: string; // User UID
@@ -23,7 +35,7 @@ export interface IOrder {
         phone?: string;
     };
     paymentMethod: string;
-    status: 'Pending' | 'Processing' | 'Shipped' | 'Out for Delivery' | 'Delivered' | 'Cancelled' | 'Return Requested' | 'Replacement Requested' | 'Returned';
+    status: OrderStatus;
     paymentInfo?: {
         razorpay_order_id: string;
         razorpay_payment_id: string;

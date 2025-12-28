@@ -35,6 +35,7 @@ const statusColors: Record<string, string> = {
   'Return Requested': 'bg-orange-100 text-orange-700',
   'Replacement Requested': 'bg-blue-100 text-blue-700',
   'Returned': 'bg-gray-200 text-gray-700',
+  'Refunded': 'bg-purple-100 text-purple-700',
 };
 
 const statusLabels: Record<string, string> = {
@@ -48,6 +49,7 @@ const statusLabels: Record<string, string> = {
   'Return Requested': 'Return Requested',
   'Replacement Requested': 'Replacement Requested',
   'Returned': 'Returned',
+  'Refunded': 'Refunded',
 };
 
 type TabType = 'active' | 'past';
@@ -100,11 +102,11 @@ const MyOrders: React.FC = () => {
 
   // Separate active and past orders and sort by date descending
   const activeOrders = orders
-    .filter(o => !['Delivered', 'Cancelled'].includes(o.status))
+    .filter(order => !['Delivered', 'Cancelled', 'Returned', 'Refunded'].includes(order.status))
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
   const pastOrders = orders
-    .filter(o => ['Delivered', 'Cancelled'].includes(o.status))
+    .filter(order => ['Delivered', 'Cancelled', 'Returned', 'Refunded'].includes(order.status))
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
   const displayedOrders = activeTab === 'active' ? activeOrders : pastOrders;

@@ -289,10 +289,22 @@ router.post('/refund/:orderId', protect, async (req, res) => {
             console.log("Razorpay Refund Response:", refund);
         }
 
-        // Update Order
+        // Update Order - set both paymentStatus and status
         await Order.update(order._id!, {
-            paymentStatus: 'refunded'
+            paymentStatus: 'refunded',
+            status: 'Refunded',  // Move to past orders
+            refundedAt: new Date()
         });
+
+        // Emit socket event for real-time update
+        if (io) {
+            io.to(`order_${order._id}`).emit('orderStatusUpdated', {
+                orderId: order._id,
+                status: 'Refunded',
+                paymentStatus: 'refunded'
+            });
+            io.to('admin').emit('orderUpdated', { orderId: order._id, status: 'Refunded' });
+        }
 
         res.json({ message: 'Refund initiated successfully', refundId: refund.id });
 
