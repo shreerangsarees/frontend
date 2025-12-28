@@ -1,0 +1,32 @@
+{
+    "name": "Shreerang Saree",
+    "short_name": "Shreerang",
+    "description": "Elegant Sarees for Every Occasion",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#8B1A3B",
+    "orientation": "portrait-primary",
+    "icons": [
+        {
+            "src": "/logo.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/logo.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "categories": [
+        "shopping",
+        "lifestyle"
+    ],
+    "lang": "en-IN",
+    "dir": "ltr",
+    "scope": "/",
+    "prefer_related_applications": false
+}
