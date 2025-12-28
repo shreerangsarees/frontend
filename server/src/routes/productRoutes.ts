@@ -10,8 +10,8 @@ const router = express.Router();
 // Get all products (with optional pagination and search)
 router.get('/', async (req, res) => {
     try {
-        const page = parseInt(req.query.page as string) || 1;
-        const limit = parseInt(req.query.limit as string) || 0; // 0 means no limit (backward compatible)
+        const page = parseInt(req.query.page as string, 10) || 1;
+        const limit = parseInt(req.query.limit as string, 10) || 0; // 0 means no limit (backward compatible)
         const search = (req.query.search as string || '').toLowerCase().trim();
         const category = req.query.category as string;
 

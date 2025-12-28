@@ -170,25 +170,42 @@ router.get('/delivery', protect, adminOrDelivery, async (req, res) => {
     try {
         const orders: any[] = await Order.findByStatus(['Pending', 'Processing', 'Shipped', 'Out for Delivery']);
 
-        // We might need to manually fetch user details if not stored in order
-        // But for performance, we should probably have stored user Name/Email in Order snapshot too.
-        // For now, let's fetch user for each order (N+1 but manageable for dashboard)
+        // Map orders with user details (with error handling for individual user fetches)
         const mappedOrders = await Promise.all(orders.map(async (order) => {
-            const user = await User.findById(order.user);
-            return {
-                id: order._id,
-                status: order.status,
-                total_amount: order.totalAmount,
-                payment_method: order.paymentMethod,
-                created_at: order.createdAt,
-                items: order.items,
-                profiles: {
-                    full_name: user?.displayName || 'Guest',
-                    email: user?.email,
-                    phone: order.shippingAddress?.phone
-                },
-                addresses: order.shippingAddress
-            };
+            try {
+                const user = await User.findById(order.user);
+                return {
+                    id: order._id,
+                    status: order.status,
+                    total_amount: order.totalAmount,
+                    payment_method: order.paymentMethod,
+                    created_at: order.createdAt,
+                    items: order.items,
+                    profiles: {
+                        full_name: user?.displayName || 'Guest',
+                        email: user?.email || 'N/A',
+                        phone: order.shippingAddress?.phone || 'N/A'
+                    },
+                    addresses: order.shippingAddress
+                };
+            } catch (err) {
+                console.error(`Error fetching user for order ${order._id}:`, err);
+                // Return order with fallback user data
+                return {
+                    id: order._id,
+                    status: order.status,
+                    total_amount: order.totalAmount,
+                    payment_method: order.paymentMethod,
+                    created_at: order.createdAt,
+                    items: order.items,
+                    profiles: {
+                        full_name: 'Unknown User',
+                        email: 'N/A',
+                        phone: order.shippingAddress?.phone || 'N/A'
+                    },
+                    addresses: order.shippingAddress
+                };
+            }
         }));
 
         res.json(mappedOrders);

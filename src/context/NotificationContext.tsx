@@ -69,7 +69,9 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
             const audio = new Audio('/notification.mp3');
             audio.volume = 0.3;
             audio.play().catch(() => { }); // Ignore errors if sound fails
-        } catch (e) { }
+        } catch (e) {
+            console.warn('Failed to play notification sound:', e);
+        }
 
         // Browser push notifications are now handled by FCM
         // No need to manually create Notification here

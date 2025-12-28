@@ -255,13 +255,10 @@ router.post('/cod-order', protect, async (req, res) => {
     }
 });
 
-export default router;
-
-// Refund Route
+// Refund Route - MUST be before export!
 router.post('/refund/:orderId', protect, async (req, res) => {
     try {
-        // Only admin can initiate refund? Or maybe safe to let anyone try if we validate properly?
-        // Let's restrict to admin for now as it involves money back
+        // Only admin can initiate refund
         if (req.user.role !== 'admin') {
             return res.status(401).json({ message: 'Unauthorized. Admin access required for refunds.' });
         }
@@ -273,22 +270,17 @@ router.post('/refund/:orderId', protect, async (req, res) => {
             return res.status(400).json({ message: 'Order is not eligible for Razorpay refund (Not paid via Razorpay)' });
         }
 
-        /* 
-           Note: We allow refund even if status is not 'Cancelled' in case of partial refunds or manual overrides, 
-           but typically it should be Cancelled or Returned. 
-        */
-
         if (!razorpay) {
             return res.status(503).json({ message: 'Payment gateway not configured' });
         }
 
-        // Ideally check if already refunded
+        // Check if already refunded
         if (order.paymentStatus === 'refunded') {
             return res.status(400).json({ message: 'Order is already marked as refunded' });
         }
 
         const paymentId = order.paymentInfo!.razorpay_payment_id;
-        const refundAmount = order.totalAmount * 100; // Refund full amount for now
+        const refundAmount = order.totalAmount * 100; // Refund full amount
 
         // Call Razorpay Refund API
         const refund = await razorpay.payments.refund(paymentId, {
@@ -301,8 +293,7 @@ router.post('/refund/:orderId', protect, async (req, res) => {
 
         // Update Order
         await Order.update(order._id!, {
-            paymentStatus: 'refunded', // We should add this field to interface if not exists
-            // store refund id if schema allows
+            paymentStatus: 'refunded'
         });
 
         res.json({ message: 'Refund initiated successfully', refundId: refund.id });
@@ -315,3 +306,5 @@ router.post('/refund/:orderId', protect, async (req, res) => {
         });
     }
 });
+
+export default router;

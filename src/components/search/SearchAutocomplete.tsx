@@ -27,7 +27,11 @@ const addRecentSearch = (query: string) => {
     if (!query.trim()) return;
     const recent = getRecentSearches().filter(s => s !== query);
     recent.unshift(query);
-    localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(recent.slice(0, MAX_RECENT)));
+    try {
+        localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(recent.slice(0, MAX_RECENT)));
+    } catch (error) {
+        console.warn('Failed to save recent searches:', error);
+    }
 };
 
 const clearRecentSearches = () => {

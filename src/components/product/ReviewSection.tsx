@@ -76,7 +76,9 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ productId, productName })
                     }));
                     setReviews(legacyReviews);
                 }
-            } catch (e) { }
+            } catch (e) {
+                console.warn('Failed to load legacy reviews from product data:', e);
+            }
         } finally {
             setLoading(false);
         }
@@ -115,10 +117,14 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ productId, productName })
         }
     }, [productId]);
 
-    // Save helpful clicks to localStorage
+    // Save helpful clicks to localStorage with error handling
     useEffect(() => {
         if (helpfulClicked.size > 0) {
-            localStorage.setItem(`helpful_${productId}`, JSON.stringify([...helpfulClicked]));
+            try {
+                localStorage.setItem(`helpful_${productId}`, JSON.stringify([...helpfulClicked]));
+            } catch (error) {
+                console.warn('Failed to save helpful clicks to localStorage:', error);
+            }
         }
     }, [helpfulClicked, productId]);
 

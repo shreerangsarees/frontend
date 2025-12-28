@@ -47,7 +47,11 @@ export function useRecentlyViewed() {
         const updated = [product, ...filtered].slice(0, MAX_ITEMS);
 
         // Save to localStorage
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+        } catch (error) {
+            console.warn('Failed to save recently viewed products:', error);
+        }
         setRecentlyViewed(updated);
     };
 

@@ -1,7 +1,7 @@
 {
-    "name": "t-mart-server",
+    "name": "shreerang-saree-server",
     "version": "1.0.0",
-    "description": "Backend for T-Mart Express",
+    "description": "Backend for Shreerang Saree",
     "main": "dist/index.js",
     "scripts": {
         "start": "node dist/index.js",
