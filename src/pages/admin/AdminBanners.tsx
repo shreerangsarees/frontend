@@ -3,6 +3,8 @@ import AdminLayout from './AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Plus, Trash2, Edit, Image, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
+import { API_BASE_URL } from '@/apiConfig';
 import { useSocket } from '@/context/SocketContext';
 import ImageUpload from '@/components/ui/ImageUpload';
 import {
@@ -71,7 +73,7 @@ const AdminBanners: React.FC = () => {
     const fetchBanners = async () => {
         try {
             const token = localStorage.getItem('tmart_token');
-            const res = await fetch('/api/banners/admin', {
+            const res = await fetch(`${API_BASE_URL}/banners/admin`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (res.ok) {
@@ -87,7 +89,7 @@ const AdminBanners: React.FC = () => {
 
     const fetchCategories = async () => {
         try {
-            const res = await fetch('/api/categories');
+            const res = await fetch(`${API_BASE_URL}/categories`);
             if (res.ok) {
                 const data = await res.json();
                 setCategories(data);
@@ -107,7 +109,7 @@ const AdminBanners: React.FC = () => {
 
         try {
             const token = localStorage.getItem('tmart_token');
-            const url = editingBanner ? `/api/banners/${editingBanner._id}` : '/api/banners';
+            const url = editingBanner ? `${API_BASE_URL}/banners/${editingBanner._id}` : `${API_BASE_URL}/banners`;
             const method = editingBanner ? 'PUT' : 'POST';
 
             // Auto-generate title from link for DB compatibility if needed
@@ -146,7 +148,7 @@ const AdminBanners: React.FC = () => {
 
         try {
             const token = localStorage.getItem('tmart_token');
-            const res = await fetch(`/api/banners/${id}`, {
+            const res = await fetch(`${API_BASE_URL}/banners/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -162,7 +164,7 @@ const AdminBanners: React.FC = () => {
     const toggleActive = async (banner: Banner) => {
         try {
             const token = localStorage.getItem('tmart_token');
-            const res = await fetch(`/api/banners/${banner._id}`, {
+            const res = await fetch(`${API_BASE_URL}/banners/${banner._id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

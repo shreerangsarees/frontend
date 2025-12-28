@@ -17,6 +17,9 @@ router.post('/', protect, async (req, res) => {
 
         const { items, shippingAddress, paymentMethod } = req.body;
 
+        // Debug: Log the incoming items to see selectedColor
+        console.log('Order Creation - Incoming items:', JSON.stringify(items, null, 2));
+
         if (!shippingAddress) {
             return res.status(400).json({ message: 'Shipping address is required' });
         }
@@ -51,17 +54,27 @@ router.post('/', protect, async (req, res) => {
             });
         }
 
-        // Delivery Fee Logic
+        // Debug: Log finalItems after processing
+        console.log('Order Creation - Final items being saved:', JSON.stringify(finalItems, null, 2));
+
+        // Delivery Fee Logic - For validation only
         const orderCount = await Order.countByUser(req.user.uid);
         const isFirstOrder = orderCount === 0;
-        let deliveryFee = 40;
+        let expectedDeliveryFee = 40;
         if (isFirstOrder || calculatedTotal >= 500) {
-            deliveryFee = 0;
+            expectedDeliveryFee = 0;
         }
 
-        const finalTotal = calculatedTotal + deliveryFee;
+        // IMPORTANT: Use the totalAmount sent from frontend (which includes discount and delivery fee)
+        // Frontend has already calculated: subtotal - discount + delivery fee
+        const finalTotal = req.body.totalAmount;
 
-        // Create Order
+        // Store the delivery fee from frontend or calculated
+        const deliveryFee = req.body.deliveryFee !== undefined ? req.body.deliveryFee : expectedDeliveryFee;
+
+        // Store discount if provided
+        const discount = req.body.discount || 0;
+
         // Create Order
         const order = await Order.create({
             user: req.user.uid,
@@ -70,6 +83,7 @@ router.post('/', protect, async (req, res) => {
             shippingAddress,
             paymentMethod,
             deliveryFee,
+            discount,
             ...(req.body.paymentInfo && { paymentInfo: req.body.paymentInfo })
         });
 

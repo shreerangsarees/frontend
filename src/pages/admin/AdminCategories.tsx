@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import AdminLayout from './AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Search, Trash2, Edit2, Loader2, Save, X } from 'lucide-react';
+import { Search, Plus, Trash2, Edit2, FolderTree, Image as ImageIcon, X, Save, Loader2 } from 'lucide-react';
+import { API_BASE_URL } from '@/apiConfig';
 import { toast } from 'sonner';
 import { useSocket } from '@/context/SocketContext';
 
@@ -31,7 +32,7 @@ const AdminCategories: React.FC = () => {
     const fetchCategories = async () => {
         try {
             const token = localStorage.getItem('tmart_token');
-            const res = await fetch('/api/categories', {
+            const res = await fetch(`${API_BASE_URL}/categories`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (res.ok) {
@@ -66,7 +67,7 @@ const AdminCategories: React.FC = () => {
     const handleSave = async () => {
         try {
             const token = localStorage.getItem('tmart_token');
-            const url = editingId ? `/api/categories/${editingId}` : '/api/categories';
+            const url = editingId ? `${API_BASE_URL}/categories/${editingId}` : `${API_BASE_URL}/categories`;
             const method = editingId ? 'PUT' : 'POST';
 
             const res = await fetch(url, {
@@ -97,7 +98,7 @@ const AdminCategories: React.FC = () => {
         if (!confirm('Are you sure you want to delete this category?')) return;
         try {
             const token = localStorage.getItem('tmart_token');
-            const res = await fetch(`/api/categories/${id}`, {
+            const res = await fetch(`${API_BASE_URL}/categories/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });

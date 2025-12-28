@@ -13,6 +13,7 @@ import {
 import Layout from '@/components/layout/Layout';
 import ProductCard from '@/components/products/ProductCard';
 import { ProductCardSkeleton } from '@/components/products/ProductCardSkeleton';
+import { API_BASE_URL } from '@/apiConfig';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useSocket } from '@/context/SocketContext';
@@ -46,7 +47,7 @@ const Products: React.FC = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await fetch('/api/categories');
+        const res = await fetch(`${API_BASE_URL}/categories`);
         if (res.ok) {
           const data = await res.json();
           setCategories(data);
@@ -128,7 +129,7 @@ const Products: React.FC = () => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const response = await fetch('/api/products');
+        const response = await fetch(`${API_BASE_URL}/products`);
         if (!response.ok) throw new Error('Failed to fetch');
         const data = await response.json();
 

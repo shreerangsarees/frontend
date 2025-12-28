@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { User, Mail, Lock, Phone, Save, Loader2, MapPin, Plus, Trash2, X, Package, ArrowRight, Bell, Edit, Check, Star } from 'lucide-react';
 import { useNotifications } from '@/context/NotificationContext';
 import Layout from '@/components/layout/Layout';
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
+import { API_BASE_URL } from '@/apiConfig';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
@@ -41,11 +42,11 @@ const Profile: React.FC = () => {
         setLoading(true);
         try {
             const token = localStorage.getItem('tmart_token');
-            const res = await fetch('/api/users/profile', {
+            const res = await fetch(`${API_BASE_URL}/users/profile`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token} `
                 },
                 body: JSON.stringify({
                     name,
@@ -164,13 +165,13 @@ const Profile: React.FC = () => {
         try {
             const token = localStorage.getItem('tmart_token');
             const payload = { addresses };
-            console.log("Sending address update:", payload);
+            // console.log("Sending address update:", payload);
 
-            const res = await fetch('/api/users/profile', {
+            const res = await fetch(`${API_BASE_URL}/users/profile`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token} `
                 },
                 body: JSON.stringify(payload)
             });
@@ -181,8 +182,8 @@ const Profile: React.FC = () => {
                 toast.success(successMessage);
                 await refreshProfile();
             } else {
-                console.error("Address update error response:", data);
-                toast.error(data.message || `Failed to update: ${res.statusText}`);
+                // console.error("Address update error response:", data);
+                toast.error(data.message || `Failed to update: ${res.statusText} `);
             }
         } catch (error: any) {
             console.error("Network error updating address:", error);
@@ -334,7 +335,7 @@ const Profile: React.FC = () => {
                             {user.addresses && user.addresses.length > 0 ? (
                                 <div className="space-y-4">
                                     {user.addresses.map((addr, i) => (
-                                        <div key={i} className={`flex flex-col sm:flex-row sm:items-start justify-between p-4 border rounded-xl transition-colors ${addr.is_default ? 'bg-primary/5 border-primary/20' : 'bg-muted/10 border-border hover:bg-muted/30'}`}>
+                                        <div key={i} className={`flex flex - col sm: flex - row sm: items - start justify - between p - 4 border rounded - xl transition - colors ${addr.is_default ? 'bg-primary/5 border-primary/20' : 'bg-muted/10 border-border hover:bg-muted/30'} `}>
                                             <div className="mb-3 sm:mb-0">
                                                 <div className="flex items-center gap-2 mb-1">
                                                     <span className="font-bold text-sm bg-primary/10 text-primary px-2 py-0.5 rounded">{addr.label || 'Home'}</span>
@@ -345,7 +346,7 @@ const Profile: React.FC = () => {
                                                     )}
                                                 </div>
                                                 <p className="text-sm text-foreground/80 mb-1">
-                                                    {addr.full_address || `${addr.street}, ${addr.city}, ${addr.zip}`}
+                                                    {addr.full_address || `${addr.street}, ${addr.city}, ${addr.zip} `}
                                                 </p>
                                                 <p className="text-xs text-muted-foreground flex items-center gap-1">
                                                     <Phone className="h-3 w-3" /> {addr.phone}

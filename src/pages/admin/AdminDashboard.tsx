@@ -5,6 +5,7 @@ import { useSocket } from '@/context/SocketContext';
 import { formatDate } from '@/lib/dateUtils';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { API_BASE_URL } from '@/apiConfig';
 import { useNavigate } from 'react-router-dom';
 
 interface DashboardStats {
@@ -52,7 +53,7 @@ const AdminDashboard: React.FC = () => {
     try {
       const token = localStorage.getItem('tmart_token');
       const headers = { 'Authorization': `Bearer ${token}` };
-      const statsRes = await fetch('/api/analytics/dashboard', { headers });
+      const statsRes = await fetch(`${API_BASE_URL}/analytics/dashboard`, { headers });
       const data = statsRes.ok ? await statsRes.json() : {};
 
       setStats({

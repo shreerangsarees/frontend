@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Edit, Trash2, X, Loader2, Save } from 'lucide-react';
+import { Search, Plus, Trash2, Edit, Filter, MoreHorizontal, Image as ImageIcon, Loader2, X, Save } from 'lucide-react';
+import { API_BASE_URL } from '@/apiConfig';
 import AdminLayout from './AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -115,7 +116,7 @@ const AdminProducts: React.FC = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('tmart_token');
-      const res = await fetch('/api/products', {
+      const res = await fetch(`${API_BASE_URL}/products`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -140,7 +141,7 @@ const AdminProducts: React.FC = () => {
   const fetchCategories = async () => {
     try {
       const token = localStorage.getItem('tmart_token');
-      const res = await fetch('/api/categories', {
+      const res = await fetch(`${API_BASE_URL}/categories`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -155,7 +156,7 @@ const AdminProducts: React.FC = () => {
     e.preventDefault();
     try {
       const token = localStorage.getItem('tmart_token');
-      const res = await fetch('/api/categories', {
+      const res = await fetch(`${API_BASE_URL}/categories`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -245,7 +246,7 @@ const AdminProducts: React.FC = () => {
     if (!confirm('Are you sure you want to delete this product?')) return;
     try {
       const token = localStorage.getItem('tmart_token');
-      const res = await fetch(`/api/products/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/products/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });

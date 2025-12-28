@@ -37,7 +37,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 picture: firebaseUser.photoURL
             }, config);
 
-            console.log("AuthContext Sync Response:", data);
+            // console.log("AuthContext Sync Response:", data);
 
             // Fetch latest profile including role
             // The sync response might already be enough, but let's map it correctly

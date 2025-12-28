@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Play, Youtube } from 'lucide-react';
+import { API_BASE_URL } from '@/apiConfig';
 import { Button } from '@/components/ui/button';
 
 interface YouTubeVideo {
@@ -15,7 +16,7 @@ const YouTubeSection: React.FC = () => {
         // Fetch settings to get YouTube config
         const fetchSettings = async () => {
             try {
-                const res = await fetch('/api/settings');
+                const res = await fetch(`${API_BASE_URL}/settings`);
                 if (res.ok) {
                     const data = await res.json();
                     if (data.youtubeVideos && data.youtubeVideos.length > 0) {

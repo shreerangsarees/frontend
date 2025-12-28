@@ -3,6 +3,7 @@ import { useSocket } from './SocketContext';
 import { useAuth } from './AuthContext';
 import { getToken, onMessage } from 'firebase/messaging';
 import { messaging } from '@/lib/firebase';
+import { API_BASE_URL } from '@/apiConfig';
 import api from '@/api/axios';
 
 export interface AppNotification {
@@ -162,14 +163,14 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         if (!messaging) return;
 
         try {
-            console.log('[FCM-Frontend] Requesting permission...');
+            // console.log('[FCM-Frontend] Requesting permission...');
             if (!('Notification' in window)) {
-                console.log('[FCM-Frontend] Notifications not supported in this browser/context');
+                // console.log('[FCM-Frontend] Notifications not supported in this browser/context');
                 return;
             }
 
             const permission = await Notification.requestPermission();
-            console.log('[FCM-Frontend] Permission result:', permission);
+            // console.log('[FCM-Frontend] Permission result:', permission);
 
             if (permission === 'granted') {
                 const vapidKey = import.meta.env.VITE_FIREBASE_VAPID_KEY;
@@ -180,7 +181,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
                     registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
                         scope: '/firebase-cloud-messaging-push-scope'
                     });
-                    console.log('[FCM-Frontend] SW registered:', registration);
+                    // console.log('[FCM-Frontend] SW registered:', registration);
                 } catch (swError) {
                     console.error('[FCM-Frontend] SW registration failed, trying default:', swError);
                     // Fallback to default registration attempt or existing one
@@ -191,7 +192,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
                     vapidKey: vapidKey,
                     serviceWorkerRegistration: registration
                 });
-                console.log('[FCM-Frontend] Token retrieved:', token);
+                // console.log('[FCM-Frontend] Token retrieved:', token);
 
                 if (token && user) {
                     const idToken = localStorage.getItem('tmart_token');
@@ -199,7 +200,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
                         console.error('[FCM-Frontend] No auth token found in localStorage');
                         return;
                     }
-                    fetch('/api/notifications/register-token', {
+                    fetch(`${API_BASE_URL}/notifications/register-token`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -208,7 +209,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
                         body: JSON.stringify({ token })
                     })
                         .then(res => res.json())
-                        .then(data => console.log('[FCM-Frontend] Token registration response:', data))
+                        .then(data => { }) // console.log('[FCM-Frontend] Token registration response:', data))
                         .catch(err => console.error('[FCM-Frontend] Token registration error:', err));
                 }
             }
@@ -232,7 +233,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         if (!messaging) return;
 
         const unsubscribe = onMessage(messaging, (payload) => {
-            console.log('Foreground FCM message received (suppressed UI update as Socket handles it):', payload);
+            // console.log('Foreground FCM message received (suppressed UI update as Socket handles it):', payload);
             // We do NOT call addNotification here because the Socket.IO listener 
             // already handles the immediate UI update for order status changes.
             // This prevents duplicate notifications.

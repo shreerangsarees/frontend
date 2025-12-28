@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Edit, Trash2, X, Loader2, Save, FileText } from 'lucide-react';
+import { Search, Plus, Trash2, Edit, FileText, Calendar, Image as ImageIcon, Loader2, X } from 'lucide-react';
+import { API_BASE_URL } from '@/apiConfig';
 import { formatDate } from '@/lib/dateUtils';
 import AdminLayout from './AdminLayout';
 import { Button } from '@/components/ui/button';
@@ -32,7 +33,7 @@ const AdminBlogs: React.FC = () => {
         try {
             setLoading(true);
             const token = localStorage.getItem('tmart_token');
-            const res = await fetch('/api/blogs', {
+            const res = await fetch(`${API_BASE_URL}/blogs`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (res.ok) {
@@ -96,7 +97,7 @@ const AdminBlogs: React.FC = () => {
         if (!confirm('Are you sure you want to delete this blog?')) return;
         try {
             const token = localStorage.getItem('tmart_token');
-            const res = await fetch(`/api/blogs/${id}`, {
+            const res = await fetch(`${API_BASE_URL}/blogs/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });

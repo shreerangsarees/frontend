@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Copy, Check, Gift, Sparkles, TicketPercent } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import { API_BASE_URL } from '@/apiConfig';
 import { formatDate, parseDate } from '@/lib/dateUtils';
 
 interface Coupon {
@@ -24,7 +26,7 @@ const CouponBanner = () => {
 
     const fetchCoupons = async () => {
         try {
-            const res = await fetch('/api/coupons/active');
+            const res = await fetch(`${API_BASE_URL}/coupons/active`);
             if (res.ok) {
                 const data = await res.json();
                 // Filter active coupons that haven't expired

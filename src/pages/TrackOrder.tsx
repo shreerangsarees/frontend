@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Layout from '@/components/layout/Layout';
-import { ArrowLeft, Search, Package, Loader2 } from 'lucide-react';
+import { Package, Truck, CheckCircle, Clock, MapPin, ArrowLeft, Search, Loader2 } from 'lucide-react';
+import { API_BASE_URL } from '@/apiConfig';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,7 +22,7 @@ const TrackOrder: React.FC = () => {
 
         setLoading(true);
         try {
-            const res = await fetch(`/api/orders/${orderId}`);
+            const res = await fetch(`${API_BASE_URL}/orders/${orderId}`);
             if (res.ok) {
                 navigate(`/order/${orderId}`);
             } else {

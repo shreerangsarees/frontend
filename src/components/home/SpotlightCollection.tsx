@@ -1,14 +1,15 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from '@/apiConfig';
 
 const SpotlightCollection = () => {
     const navigate = useNavigate();
-    const [config, setConfig] = React.useState<any>(null);
+    const [config, setConfig] = useState<any>(null);
 
-    React.useEffect(() => {
-        fetch('/api/settings')
+    useEffect(() => {
+        fetch(`${API_BASE_URL}/settings`)
             .then(res => res.json())
             .then(data => {
                 if (data.spotlight) {

@@ -5,7 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import ImageUpload from '@/components/ui/ImageUpload';
 import { toast } from 'sonner';
-import { Store, User, Save, Plus, Trash2, Star } from 'lucide-react';
+import { Save, Store, Truck, Phone, Mail, MapPin, DollarSign, Facebook, Instagram, Twitter, Youtube, Play, Loader2, Star, Trash2, Plus, User } from 'lucide-react';
+import { API_BASE_URL } from '@/apiConfig';
 
 const AdminSettings: React.FC = () => {
     const [storeName, setStoreName] = useState('Shreerang Saree');
@@ -37,7 +38,7 @@ const AdminSettings: React.FC = () => {
 
     const fetchCategories = async () => {
         try {
-            const res = await fetch('/api/categories');
+            const res = await fetch(`${API_BASE_URL}/categories`);
             if (res.ok) setCategories(await res.json());
         } catch (error) {
             console.error("Error fetching categories", error);
@@ -47,7 +48,7 @@ const AdminSettings: React.FC = () => {
     const fetchSettings = async () => {
         try {
             const token = localStorage.getItem('tmart_token');
-            const res = await fetch('/api/settings', {
+            const res = await fetch(`${API_BASE_URL}/settings`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -72,7 +73,7 @@ const AdminSettings: React.FC = () => {
         e.preventDefault();
         try {
             const token = localStorage.getItem('tmart_token');
-            const res = await fetch('/api/settings', {
+            const res = await fetch(`${API_BASE_URL}/settings`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -103,7 +104,7 @@ const AdminSettings: React.FC = () => {
         e.preventDefault();
         try {
             const token = localStorage.getItem('tmart_token');
-            const res = await fetch('/api/users/profile', {
+            const res = await fetch(`${API_BASE_URL}/users/profile`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

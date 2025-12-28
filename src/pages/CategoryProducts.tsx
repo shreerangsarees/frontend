@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 import ProductCard from '@/components/products/ProductCard';
+import { API_BASE_URL } from '@/apiConfig';
 import { Button } from '@/components/ui/button';
 import { Product } from '@/types';
 
@@ -53,7 +54,7 @@ const CategoryProducts: React.FC = () => {
         let actualCategoryName = decodeURIComponent(categoryId);
 
         try {
-          const catRes = await fetch(`/api/categories/${categoryId}`);
+          const catRes = await fetch(`${API_BASE_URL}/categories/${categoryId}`);
           if (catRes.ok) {
             const catData = await catRes.json();
             actualCategoryName = catData.name || actualCategoryName;
@@ -66,7 +67,7 @@ const CategoryProducts: React.FC = () => {
         setCategoryName(actualCategoryName);
 
         // Now fetch products and filter by category name (case-insensitive)
-        const res = await fetch('/api/products?limit=0');
+        const res = await fetch(`${API_BASE_URL}/products?limit=0`);
         if (res.ok) {
           const data = await res.json();
           const products = Array.isArray(data) ? data : (data.products || []);

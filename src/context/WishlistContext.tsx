@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useAuth } from './AuthContext';
+import { API_BASE_URL } from '@/apiConfig';
 import { toast } from 'sonner';
 
 interface WishlistItem {
@@ -42,7 +43,7 @@ export const WishlistProvider: React.FC<{ children: ReactNode }> = ({ children }
         setLoading(true);
         try {
             const token = localStorage.getItem('tmart_token');
-            const res = await fetch('/api/wishlist', {
+            const res = await fetch(`${API_BASE_URL}/wishlist`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (res.ok) {
@@ -68,7 +69,7 @@ export const WishlistProvider: React.FC<{ children: ReactNode }> = ({ children }
 
         try {
             const token = localStorage.getItem('tmart_token');
-            const res = await fetch(`/api/wishlist/add/${productId}`, {
+            const res = await fetch(`${API_BASE_URL}/wishlist/add/${productId}`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -94,7 +95,7 @@ export const WishlistProvider: React.FC<{ children: ReactNode }> = ({ children }
     const removeFromWishlist = async (productId: string) => {
         try {
             const token = localStorage.getItem('tmart_token');
-            const res = await fetch(`/api/wishlist/remove/${productId}`, {
+            const res = await fetch(`${API_BASE_URL}/wishlist/remove/${productId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });

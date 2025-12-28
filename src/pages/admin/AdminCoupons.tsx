@@ -3,7 +3,8 @@ import AdminLayout from './AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { Plus, Trash2, TicketPercent } from 'lucide-react';
+import { Search, Plus, Trash2, Edit, TicketPercent, Tag, Calendar, CheckCircle, XCircle } from 'lucide-react';
+import { API_BASE_URL } from '@/apiConfig';
 import { cn } from '@/lib/utils';
 import { formatDate } from '@/lib/dateUtils';
 import { useSocket } from '@/context/SocketContext';
@@ -52,7 +53,7 @@ const AdminCoupons: React.FC = () => {
     const fetchCoupons = async () => {
         try {
             const token = localStorage.getItem('tmart_token');
-            const res = await fetch('/api/coupons', {
+            const res = await fetch(`${API_BASE_URL}/coupons`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (res.ok) {
@@ -70,7 +71,7 @@ const AdminCoupons: React.FC = () => {
         e.preventDefault();
         try {
             const token = localStorage.getItem('tmart_token');
-            const res = await fetch('/api/coupons', {
+            const res = await fetch(`${API_BASE_URL}/coupons`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -104,7 +105,7 @@ const AdminCoupons: React.FC = () => {
         if (!confirm('Are you sure?')) return;
         try {
             const token = localStorage.getItem('tmart_token');
-            await fetch(`/api/coupons/${id}`, {
+            await fetch(`${API_BASE_URL}/coupons/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });

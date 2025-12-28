@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { API_BASE_URL } from '@/apiConfig';
 import { Button } from '@/components/ui/button';
 import { useSocket } from '@/context/SocketContext';
 import { cn } from '@/lib/utils';
@@ -45,7 +46,7 @@ const BannerSlideshow: React.FC = () => {
 
     const fetchBanners = async () => {
         try {
-            const res = await fetch('/api/banners');
+            const res = await fetch(`${API_BASE_URL}/banners`);
             if (res.ok) {
                 const data: Banner[] = await res.json();
 

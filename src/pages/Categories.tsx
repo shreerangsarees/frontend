@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Layout from '@/components/layout/Layout';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from '@/apiConfig';
 // CategoryCard is no longer used based on the new component logic
 // import CategoryCard from '@/components/products/CategoryCard';
 // Loader2 is replaced by a skeleton loader
@@ -21,7 +22,7 @@ const Categories: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/categories')
+    fetch(`${API_BASE_URL}/categories`)
       .then(res => res.json())
       .then(data => {
         setCategories(data);

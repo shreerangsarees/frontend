@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Star, Quote, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { API_BASE_URL } from '@/apiConfig';
 import { useSocket } from '@/context/SocketContext';
 import { cn } from '@/lib/utils';
 
@@ -38,7 +40,7 @@ const TestimonialsSection: React.FC = () => {
 
     const fetchTestimonials = async () => {
         try {
-            const res = await fetch('/api/testimonials');
+            const res = await fetch(`${API_BASE_URL}/testimonials`);
             if (res.ok) {
                 const data = await res.json();
                 setTestimonials(data);

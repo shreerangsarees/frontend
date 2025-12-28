@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Users, Search, Shield, Truck, User, Trash2, Loader2 } from 'lucide-react';
+import { API_BASE_URL } from '@/apiConfig';
 import AdminLayout from './AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -56,7 +57,7 @@ const AdminUsers: React.FC = () => {
         setLoading(true);
         try {
             const token = localStorage.getItem('tmart_token');
-            const res = await fetch('/api/users', {
+            const res = await fetch(`${API_BASE_URL}/users`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -79,7 +80,7 @@ const AdminUsers: React.FC = () => {
         setUpdatingUserId(userId);
         try {
             const token = localStorage.getItem('tmart_token');
-            const res = await fetch(`/api/users/${userId}/role`, {
+            const res = await fetch(`${API_BASE_URL}/users/${userId}/role`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -111,7 +112,7 @@ const AdminUsers: React.FC = () => {
 
         try {
             const token = localStorage.getItem('tmart_token');
-            const res = await fetch(`/api/users/${userId}`, {
+            const res = await fetch(`${API_BASE_URL}/users/${userId}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`

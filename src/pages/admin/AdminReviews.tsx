@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import AdminLayout from './AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Trash2, MessageSquare, Loader2, Star, X, Send, CheckCircle } from 'lucide-react';
+import { Search, Trash2, CheckCircle, XCircle, Star, MessageSquare, Reply, X, Loader2, Send } from 'lucide-react';
+import { API_BASE_URL } from '@/apiConfig';
 import { toast } from 'sonner';
 import { useSocket } from '@/context/SocketContext';
 
@@ -37,7 +38,7 @@ const AdminReviews: React.FC = () => {
     const fetchReviews = async () => {
         try {
             const token = localStorage.getItem('tmart_token');
-            const res = await fetch('/api/reviews', {
+            const res = await fetch(`${API_BASE_URL}/reviews`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (res.ok) {
@@ -75,7 +76,7 @@ const AdminReviews: React.FC = () => {
         if (!confirm('Are you sure you want to delete this review?')) return;
         try {
             const token = localStorage.getItem('tmart_token');
-            const res = await fetch(`/api/reviews/${id}`, {
+            const res = await fetch(`${API_BASE_URL}/reviews/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -94,7 +95,7 @@ const AdminReviews: React.FC = () => {
         setSubmitting(true);
         try {
             const token = localStorage.getItem('tmart_token');
-            const res = await fetch(`/api/reviews/${selectedReview.id}/reply`, {
+            const res = await fetch(`${API_BASE_URL}/reviews/${selectedReview.id}/reply`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

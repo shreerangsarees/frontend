@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Star, ThumbsUp, CheckCircle2, BadgeCheck, Loader2 } from 'lucide-react';
+import { Star, ThumbsUp, CheckCircle2, BadgeCheck, Loader2, MessageSquare } from 'lucide-react';
+import { API_BASE_URL } from '@/apiConfig';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { FadeIn } from '@/components/ui/motion';
@@ -51,7 +52,7 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ productId, productName })
         }
 
         try {
-            const res = await fetch(`/api/reviews/product/${productId}`);
+            const res = await fetch(`${API_BASE_URL}/reviews/product/${productId}`);
             if (res.ok) {
                 const data = await res.json();
                 setReviews(data.reviews || []);
@@ -61,11 +62,11 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ productId, productName })
             console.error(error);
             // Fallback to embedded ratings
             try {
-                const res = await fetch(`/api/products/${productId}`);
+                const res = await fetch(`${API_BASE_URL}/products/${productId}`);
                 if (res.ok) {
                     const data = await res.json();
                     const legacyReviews = (data.ratings || []).map((r: any, i: number) => ({
-                        id: r._id || `legacy-${i}`,
+                        id: r._id || `legacy - ${i} `,
                         user: r.user,
                         userName: r.name,
                         rating: r.rating,
@@ -91,7 +92,7 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ productId, productName })
         }
 
         try {
-            const res = await api.post(`/reviews/${reviewId}/helpful`);
+            const res = await api.post(`/ reviews / ${reviewId}/helpful`);
             if (res.status === 200) {
                 const updated = res.data;
                 setReviews(prev => prev.map(r =>

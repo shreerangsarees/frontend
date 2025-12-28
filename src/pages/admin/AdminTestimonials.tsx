@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import AdminLayout from './AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Trash2, Edit, MessageSquare, Eye, EyeOff, Loader2, Star } from 'lucide-react';
+import { Search, Trash2, CheckCircle, XCircle, Star, Quote, Loader2, Plus, Eye, EyeOff, Edit, MessageSquare } from 'lucide-react';
+import { API_BASE_URL } from '@/apiConfig';
 import { toast } from 'sonner';
 import { useSocket } from '@/context/SocketContext';
 
@@ -59,7 +60,7 @@ const AdminTestimonials: React.FC = () => {
     const fetchTestimonials = async () => {
         try {
             const token = localStorage.getItem('tmart_token');
-            const res = await fetch('/api/testimonials/admin', {
+            const res = await fetch(`${API_BASE_URL}/testimonials/admin`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (res.ok) {
@@ -83,7 +84,7 @@ const AdminTestimonials: React.FC = () => {
 
         try {
             const token = localStorage.getItem('tmart_token');
-            const url = editingTestimonial ? `/api/testimonials/${editingTestimonial._id}` : '/api/testimonials';
+            const url = editingTestimonial ? `${API_BASE_URL}/testimonials/${editingTestimonial._id}` : `${API_BASE_URL}/testimonials`;
             const method = editingTestimonial ? 'PUT' : 'POST';
 
             const res = await fetch(url, {
@@ -112,7 +113,7 @@ const AdminTestimonials: React.FC = () => {
 
         try {
             const token = localStorage.getItem('tmart_token');
-            const res = await fetch(`/api/testimonials/${id}`, {
+            const res = await fetch(`${API_BASE_URL}/testimonials/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -128,7 +129,7 @@ const AdminTestimonials: React.FC = () => {
     const toggleActive = async (testimonial: Testimonial) => {
         try {
             const token = localStorage.getItem('tmart_token');
-            const res = await fetch(`/api/testimonials/${testimonial._id}`, {
+            const res = await fetch(`${API_BASE_URL}/testimonials/${testimonial._id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

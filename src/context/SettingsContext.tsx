@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { toast } from 'sonner';
+import { API_BASE_URL } from '@/apiConfig';
 
 interface SettingsContextType {
     storeName: string;
@@ -24,7 +26,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     useEffect(() => {
         const fetchSettings = async () => {
             try {
-                const res = await fetch('/api/settings');
+                const res = await fetch(`${API_BASE_URL}/settings`);
                 if (res.ok) {
                     const data = await res.json();
                     setSettings({

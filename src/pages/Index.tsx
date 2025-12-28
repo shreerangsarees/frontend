@@ -10,6 +10,8 @@ import RecentlyViewed from '@/components/product/RecentlyViewed';
 import BannerSlideshow from '@/components/home/BannerSlideshow';
 import TestimonialsSection from '@/components/home/TestimonialsSection';
 import { Sparkles, TrendingUp, Star, ThumbsUp } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { API_BASE_URL } from '@/apiConfig';
 import { useAuth } from '@/context/AuthContext';
 import { FadeIn } from '@/components/ui/motion';
 import { LiveBadge } from '@/components/home/LiveVisuals'; // removed messy visuals
@@ -86,7 +88,7 @@ const Index: React.FC = () => {
             <ProductCarousel
               title="Recommended for You"
               description="Based on your recent interests"
-              apiUrl="/api/products/recommendations"
+              apiUrl={`${API_BASE_URL}/products/recommendations`}
               icon={ThumbsUp}
             />
           </FadeIn>
@@ -96,7 +98,7 @@ const Index: React.FC = () => {
           <ProductCarousel
             title="Best Sellers"
             description="Most loved by our customers"
-            apiUrl="/api/products/trending"
+            apiUrl={`${API_BASE_URL}/products/trending`}
             icon={TrendingUp}
           />
         </FadeIn>
@@ -110,7 +112,7 @@ const Index: React.FC = () => {
           <ProductCarousel
             title="Top Rated"
             description="Highest quality selections"
-            apiUrl="/api/products/top-rated"
+            apiUrl={`${API_BASE_URL}/products/top-rated`}
             icon={Star}
           />
         </FadeIn>
@@ -119,7 +121,7 @@ const Index: React.FC = () => {
           <ProductCarousel
             title="Featured Deals"
             description="Handpicked offers"
-            apiUrl="/api/products/featured"
+            apiUrl={`${API_BASE_URL}/products/featured`}
             icon={Sparkles}
             linkUrl="/offers"
           />

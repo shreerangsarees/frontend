@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Tag, Loader2 } from 'lucide-react';
+import { Percent, Tag, Timer, ShoppingBag } from 'lucide-react';
+import { API_BASE_URL } from '@/apiConfig';
 import Layout from '@/components/layout/Layout';
 import ProductCard from '@/components/products/ProductCard';
 import { Product } from '@/types';
@@ -35,7 +36,7 @@ const Offers: React.FC = () => {
   useEffect(() => {
     const fetchOffers = async () => {
       try {
-        const res = await fetch('/api/products');
+        const res = await fetch(`${API_BASE_URL}/products`);
         if (res.ok) {
           const data = await res.json();
           // Filter products with discount or is_new flag

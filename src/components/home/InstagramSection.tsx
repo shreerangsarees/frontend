@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Instagram, Heart, MessageCircle } from 'lucide-react';
+import { Instagram } from 'lucide-react';
+import { API_BASE_URL } from '@/apiConfig';
 import { Button } from '@/components/ui/button';
 
 const InstagramSection: React.FC = () => {
@@ -9,7 +10,7 @@ const InstagramSection: React.FC = () => {
     useEffect(() => {
         const fetchSettings = async () => {
             try {
-                const res = await fetch('/api/settings');
+                const res = await fetch(`${API_BASE_URL}/settings`);
                 if (res.ok) {
                     const data = await res.json();
                     setInstaUrl(data.instagramUrl);

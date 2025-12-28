@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
-import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, TicketPercent, ShieldCheck, Truck } from 'lucide-react';
+import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, Tag, X, Truck, ShieldCheck, TicketPercent } from 'lucide-react';
+import { API_BASE_URL } from '@/apiConfig';
 import Layout from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,7 +19,7 @@ const AvailableCoupons = ({ onApply, cartTotal }: { onApply: (code: string) => v
   useEffect(() => {
     const fetchCoupons = async () => {
       try {
-        const res = await fetch('/api/coupons/active');
+        const res = await fetch(`${API_BASE_URL}/coupons/active`);
         if (res.ok) {
           const data = await res.json();
           setCoupons(data);
@@ -47,7 +48,7 @@ const AvailableCoupons = ({ onApply, cartTotal }: { onApply: (code: string) => v
   return (
     <div className="space-y-3 w-full overflow-hidden">
       <p className="text-sm font-medium text-foreground flex items-center gap-2">
-        <TicketPercent className="h-4 w-4 text-primary" />
+        <Tag className="h-4 w-4 text-primary" />
         Available Offers
       </p>
       <div className="grid grid-flow-col auto-cols-[85%] sm:auto-cols-[300px] overflow-x-auto gap-3 pb-4 snap-x scrollbar-hide w-full px-1">
@@ -112,7 +113,7 @@ const Cart: React.FC = () => {
     if (!codeToUse?.trim()) return;
 
     try {
-      const res = await fetch('/api/coupons/validate', {
+      const res = await fetch(`${API_BASE_URL}/coupons/validate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code: codeToUse, orderTotal: totalAmount })
@@ -139,7 +140,7 @@ const Cart: React.FC = () => {
     if (reorderItems) {
       try {
         const itemsToReorder = JSON.parse(reorderItems);
-        console.log('Processing reorder items:', itemsToReorder); // DEBUG LOG
+        // console.log('Processing reorder items:', itemsToReorder); // DEBUG LOG
 
         let addedCount = 0;
 
@@ -167,7 +168,7 @@ const Cart: React.FC = () => {
             stock: 100,
           };
 
-          console.log(`Adding to cart: ${product.name} (ID: ${product.id}) x ${item.quantity}`);
+          // console.log(`Adding to cart: ${product.name} (ID: ${product.id}) x ${item.quantity}`);
 
           // Add item quantity times
           for (let i = 0; i < (item.quantity || 1); i++) {
@@ -198,7 +199,7 @@ const Cart: React.FC = () => {
 
   // Fetch Store Settings
   useEffect(() => {
-    fetch('/api/settings')
+    fetch(`${API_BASE_URL}/settings`)
       .then(res => res.json())
       .then(data => {
         if (data) {

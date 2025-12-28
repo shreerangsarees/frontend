@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from '@/apiConfig';
 import { ArrowRight, Sparkles } from 'lucide-react';
 
 interface OccasionCategory {
@@ -18,7 +19,7 @@ const ShopByOccasion = () => {
     useEffect(() => {
         const fetchOccasions = async () => {
             try {
-                const res = await fetch('/api/categories/occasions');
+                const res = await fetch(`${API_BASE_URL}/categories/occasions`);
                 if (res.ok) {
                     const data = await res.json();
                     setOccasions(data);

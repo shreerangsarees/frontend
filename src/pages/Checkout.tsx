@@ -4,6 +4,8 @@ import { MapPin, Plus, CreditCard, Banknote, Smartphone, Check, ArrowLeft, Loade
 import Layout from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useToast } from '@/hooks/use-toast';
+import { API_BASE_URL } from '@/apiConfig';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { storeInfo } from '@/lib/store';
@@ -36,7 +38,7 @@ const Checkout: React.FC = () => {
 
   useEffect(() => {
     // Fetch Razorpay Key
-    fetch('/api/payment/config')
+    fetch(`${API_BASE_URL}/payment/config`)
       .then(res => res.json())
       .then(data => {
         if (data.razorpayKeyId) setRazorpayKey(data.razorpayKeyId);
@@ -106,7 +108,7 @@ const Checkout: React.FC = () => {
 
   // Fetch Store Settings
   useEffect(() => {
-    fetch('/api/settings')
+    fetch(`${API_BASE_URL}/settings`)
       .then(res => res.json())
       .then(data => {
         if (data) {
@@ -164,6 +166,8 @@ const Checkout: React.FC = () => {
           selectedColor: item.selectedColor
         })),
         totalAmount: grandTotal,
+        deliveryFee: deliveryFee,
+        discount: discount,
         shippingAddress: addressDetails, // assuming full object is desired or mapped in backend
         paymentMethod
       };

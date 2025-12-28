@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Clock, TrendingUp, X, Loader2 } from 'lucide-react';
+import { Search, Clock, TrendingUp, X } from 'lucide-react';
+import { API_BASE_URL } from '@/apiConfig';
 import { cn } from '@/lib/utils';
 
 interface SearchResult {
@@ -128,7 +129,7 @@ const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
     const fetchSuggestions = async (searchQuery: string) => {
         setLoading(true);
         try {
-            const res = await fetch(`/api/products?search=${encodeURIComponent(searchQuery)}`);
+            const res = await fetch(`${API_BASE_URL}/products?search=${encodeURIComponent(searchQuery)}`);
             if (res.ok) {
                 const data = await res.json();
                 // Handle both paginated and non-paginated responses

@@ -50,7 +50,7 @@ interface Order {
 type TabType = 'all' | 'active' | 'completed' | 'cancelled' | 'returns';
 
 const AdminOrders: React.FC = () => {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, isAdmin } = useAuth();
   const { socket } = useSocket(); // Use socket
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -58,10 +58,10 @@ const AdminOrders: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('all');
 
   useEffect(() => {
-    if (user) {
+    if (user && isAdmin) {
       fetchOrders();
     }
-  }, [user]);
+  }, [user, isAdmin]);
 
   // Listen for real-time updates
   useEffect(() => {

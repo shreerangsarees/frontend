@@ -6,10 +6,8 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   BarChart, Bar, PieChart, Pie, Cell, Legend, LineChart, Line
 } from 'recharts';
-import {
-  Download, TrendingUp, Users, ShoppingBag, DollarSign,
-  Box, Activity, CreditCard, Calendar
-} from 'lucide-react';
+import { Loader2, DollarSign, Users, ShoppingBag, TrendingUp, Calendar, ArrowUpRight, ArrowDownRight, Package, Download, Activity } from 'lucide-react';
+import { API_BASE_URL } from '@/apiConfig';
 import { toast } from 'sonner';
 
 // Colors for Charts
@@ -26,7 +24,7 @@ const AdminAnalytics = () => {
   const fetchAnalytics = async () => {
     try {
       const token = localStorage.getItem('tmart_token');
-      const res = await fetch('/api/analytics/overview', {
+      const res = await fetch(`${API_BASE_URL}/analytics/overview`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -47,7 +45,7 @@ const AdminAnalytics = () => {
     try {
       toast.loading('Generating report...');
       const token = localStorage.getItem('tmart_token');
-      const res = await fetch(`/api/analytics/report/${type}`, {
+      const res = await fetch(`${API_BASE_URL}/analytics/report/${type}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -57,7 +55,7 @@ const AdminAnalytics = () => {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `tmart-${type}-report-${new Date().toISOString().split('T')[0]}.pdf`;
+      a.download = `shreerang-${type}-report-${new Date().toISOString().split('T')[0]}.pdf`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);

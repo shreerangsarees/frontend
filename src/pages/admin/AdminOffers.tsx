@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Tag, Loader2, Plus, Percent, X, Save } from 'lucide-react';
+import { Tag, Percent, Loader2, X, Save, Plus } from 'lucide-react';
+import { API_BASE_URL } from '@/apiConfig';
 import AdminLayout from './AdminLayout';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -30,7 +31,7 @@ const AdminOffers: React.FC = () => {
     const fetchProducts = async () => {
         try {
             const token = localStorage.getItem('tmart_token');
-            const res = await fetch('/api/products', {
+            const res = await fetch(`${API_BASE_URL}/products`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (res.ok) {
@@ -64,7 +65,7 @@ const AdminOffers: React.FC = () => {
         setSaving(productId);
         try {
             const token = localStorage.getItem('tmart_token');
-            const res = await fetch(`/api/products/${productId}`, {
+            const res = await fetch(`${API_BASE_URL}/products/${productId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -94,7 +95,7 @@ const AdminOffers: React.FC = () => {
         setSaving(productId);
         try {
             const token = localStorage.getItem('tmart_token');
-            const res = await fetch(`/api/products/${productId}`, {
+            const res = await fetch(`${API_BASE_URL}/products/${productId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -123,7 +124,7 @@ const AdminOffers: React.FC = () => {
         setSaving(productId);
         try {
             const token = localStorage.getItem('tmart_token');
-            const res = await fetch(`/api/products/${productId}`, {
+            const res = await fetch(`${API_BASE_URL}/products/${productId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

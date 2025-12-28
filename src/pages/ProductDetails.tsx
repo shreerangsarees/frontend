@@ -7,6 +7,7 @@ import { ShoppingCart, Star, ArrowLeft, Loader2, Check, Minus, Plus, Trash2 } fr
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from 'sonner';
 import ProductCard from '@/components/products/ProductCard';
+import { API_BASE_URL } from '@/apiConfig';
 import ReviewSection from '@/components/product/ReviewSection';
 import ImageGallery from '@/components/product/ImageGallery';
 import ShareButtons from '@/components/product/ShareButtons';
@@ -57,7 +58,7 @@ const ProductDetails: React.FC = () => {
 
     const fetchProduct = async () => {
         try {
-            const res = await fetch(`/api/products/${id}`);
+            const res = await fetch(`${API_BASE_URL}/products/${id}`);
             if (res.ok) {
                 const data = await res.json();
                 setProduct(data);
@@ -84,7 +85,7 @@ const ProductDetails: React.FC = () => {
     const fetchSuggestedProducts = async (category: string, currentId: string) => {
         try {
             // Add limit=0 to ensure we get all products as an array
-            const res = await fetch(`/api/products?category=${encodeURIComponent(category)}&limit=0`);
+            const res = await fetch(`${API_BASE_URL}/products?category=${encodeURIComponent(category)}&limit=0`);
             if (res.ok) {
                 const data = await res.json();
                 // Handle both array and object responses
@@ -94,7 +95,7 @@ const ProductDetails: React.FC = () => {
 
                 // Fallback: If no same-category products, show some from other categories
                 if (filtered.length === 0) {
-                    const allRes = await fetch('/api/products?limit=0');
+                    const allRes = await fetch(`${API_BASE_URL}/products?limit=0`);
                     if (allRes.ok) {
                         const allData = await allRes.json();
                         const allProducts = Array.isArray(allData) ? allData : (allData.products || []);

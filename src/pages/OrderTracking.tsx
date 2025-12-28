@@ -20,6 +20,7 @@ import { formatDate, formatTime } from '@/lib/dateUtils';
 
 import { useSocket } from '@/context/SocketContext';
 import { toast } from 'sonner';
+import { API_BASE_URL } from '@/apiConfig';
 
 interface OrderItem {
   id: string;
@@ -112,7 +113,7 @@ const OrderTracking: React.FC = () => {
   const fetchOrder = async () => {
     try {
       // Mock finding the order from API
-      const res = await fetch(`/api/orders/${orderId}`);
+      const res = await fetch(`${API_BASE_URL}/orders/${orderId}`);
       if (res.ok) {
         const data = await res.json();
         // Map backend data to frontend interface
@@ -475,7 +476,7 @@ const OrderTracking: React.FC = () => {
                 onClick={async () => {
                   try {
                     const token = localStorage.getItem('tmart_token');
-                    const res = await fetch(`/api/invoices/${order.id}`, {
+                    const res = await fetch(`${API_BASE_URL}/invoices/${order.id}`, {
                       headers: {
                         'Authorization': `Bearer ${token}`
                       }
@@ -575,7 +576,7 @@ const OrderTracking: React.FC = () => {
 
                           try {
                             const token = localStorage.getItem('tmart_token');
-                            const res = await fetch(`/api/orders/${order.id}/cancel`, {
+                            const res = await fetch(`${API_BASE_URL}/orders/${order.id}/cancel`, {
                               method: 'PUT',
                               headers: {
                                 'Content-Type': 'application/json',
@@ -709,7 +710,7 @@ const OrderTracking: React.FC = () => {
 
                                 try {
                                   const token = localStorage.getItem('tmart_token');
-                                  const res = await fetch(`/api/orders/${order.id}/return`, {
+                                  const res = await fetch(`${API_BASE_URL}/orders/${order.id}/return`, {
                                     method: 'PUT',
                                     headers: {
                                       'Content-Type': 'application/json',
@@ -753,7 +754,7 @@ const OrderTracking: React.FC = () => {
                   className="w-full"
                   onClick={async () => {
                     try {
-                      const res = await fetch(`/api/orders/${order.id}`);
+                      const res = await fetch(`${API_BASE_URL}/orders/${order.id}`);
                       if (res.ok) {
                         const data = await res.json();
                         // Store in localStorage for reorder page
