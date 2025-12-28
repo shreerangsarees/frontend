@@ -22,10 +22,12 @@ router.post('/sync', protect, async (req, res) => {
         };
 
         // Log the incoming data for debugging
-        console.log('Syncing user:', { uid, email, hasName: !!name, hasBodyName: !!req.body.name });
+
 
         const user = await User.create(syncData as any, req.body);
-        console.log('User synced successfully:', user?.uid);
+        if (process.env.NODE_ENV === 'development') {
+            console.log('User synced successfully:', user?.uid);
+        }
 
         res.json(user);
     } catch (error: any) {
@@ -59,12 +61,7 @@ router.get('/profile', protect, async (req, res) => {
 // @access  Private
 router.put('/profile', protect, async (req, res) => {
     try {
-        console.log('PUT /profile called for user:', req.user.uid);
-        console.log('Update payload:', JSON.stringify(req.body, null, 2));
-
         const updatedUser = await User.update(req.user.uid, req.body);
-
-        console.log('User updated successfully. New data:', JSON.stringify(updatedUser, null, 2));
         res.json(updatedUser);
     } catch (error: any) {
         console.error('Error updating profile:', error);
@@ -78,7 +75,7 @@ router.put('/profile', protect, async (req, res) => {
 router.post('/address', protect, async (req, res) => {
     try {
         const newAddress = req.body;
-        console.log("Adding address:", newAddress);
+
 
         if (!newAddress.phone || !newAddress.full_address || !newAddress.pincode) {
             return res.status(400).json({ message: 'Missing required fields (phone, full_address, pincode)' });

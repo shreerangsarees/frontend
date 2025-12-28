@@ -39,7 +39,7 @@ export const Product = {
             // Defaults
             discount: data.discount || 0,
             is_new: data.is_new || false,
-            stock: data.stock !== undefined ? data.stock : 10,
+            stock: data.stock != null ? data.stock : 10,
             isAvailable: data.isAvailable ?? true,
             salesCount: 0,
             rating: 0,

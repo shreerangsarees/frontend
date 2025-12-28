@@ -23,7 +23,11 @@ export const addToRecentlyViewed = (product: Product) => {
         // Keep only MAX_ITEMS
         products = products.slice(0, MAX_ITEMS);
 
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+        } catch (error) {
+            console.warn('Failed to save recently viewed products:', error);
+        }
     } catch (error) {
         console.error('Error saving to recently viewed:', error);
     }

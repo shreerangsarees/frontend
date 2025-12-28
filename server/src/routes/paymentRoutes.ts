@@ -75,11 +75,7 @@ router.post('/verify-payment', protect, async (req, res) => {
             .update(sign.toString())
             .digest('hex');
 
-        console.log("PAYMENT DEBUG:");
-        console.log("Received Signature:", razorpay_signature);
-        console.log("Generated Signature:", expectedSign);
-        console.log("Sign Content:", sign);
-        console.log("Key Secret Exists:", !!process.env.RAZORPAY_KEY_SECRET);
+
 
         if (razorpay_signature === expectedSign) {
             // Payment verified, create order
@@ -289,7 +285,9 @@ router.post('/refund/:orderId', protect, async (req, res) => {
             receipt: `refund_${order._id}`
         });
 
-        console.log("Razorpay Refund Response:", refund);
+        if (process.env.NODE_ENV === 'development') {
+            console.log("Razorpay Refund Response:", refund);
+        }
 
         // Update Order
         await Order.update(order._id!, {

@@ -52,7 +52,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 wishlist: data.wishlist || []
             });
 
-            localStorage.setItem('tmart_token', token);
+            try {
+                localStorage.setItem('tmart_token', token);
+            } catch (error) {
+                console.error('Failed to save auth token to localStorage:', error);
+            }
 
         } catch (error: any) {
             console.error("Sync Error", error);
@@ -76,7 +80,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     wishlist: []
                 };
             });
-            localStorage.setItem('tmart_token', await firebaseUser.getIdToken());
+            try {
+                localStorage.setItem('tmart_token', await firebaseUser.getIdToken());
+            } catch (error) {
+                console.error('Failed to save auth token:', error);
+            }
         }
     }
 

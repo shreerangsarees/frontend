@@ -86,7 +86,7 @@ router.post('/', protect, admin, async (req, res) => {
 
         res.status(201).json(category);
     } catch (error) {
-        console.log(error);
+        console.error('Error fetching categories with counts:', error);
         res.status(500).json({ message: 'Error creating category' });
     }
 });

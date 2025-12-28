@@ -758,7 +758,11 @@ const OrderTracking: React.FC = () => {
                       if (res.ok) {
                         const data = await res.json();
                         // Store in localStorage for reorder page
-                        localStorage.setItem('reorder_items', JSON.stringify(data.items));
+                        try {
+                          localStorage.setItem('reorder_items', JSON.stringify(data.items));
+                        } catch (error) {
+                          console.warn('Failed to save reorder items:', error);
+                        }
                         toast.success('Items ready for reorder! Check your cart.');
                         window.location.href = '/cart';
                       }

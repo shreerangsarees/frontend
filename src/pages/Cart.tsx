@@ -140,7 +140,7 @@ const Cart: React.FC = () => {
     if (reorderItems) {
       try {
         const itemsToReorder = JSON.parse(reorderItems);
-        // console.log('Processing reorder items:', itemsToReorder); // DEBUG LOG
+
 
         let addedCount = 0;
 
