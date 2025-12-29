@@ -170,6 +170,10 @@ const Checkout: React.FC = () => {
       return;
     }
 
+    // Calculate delivery time based on location
+    const isMumbai = addressDetails.city?.toLowerCase().includes('mumbai');
+    const estimatedDelivery = isMumbai ? "3-7 Days" : "7-14 Days";
+
     setPlacingOrder(true);
 
     try {
@@ -635,7 +639,12 @@ const Checkout: React.FC = () => {
               )}
 
               <p className="text-xs text-muted-foreground text-center mt-4">
-                Estimated delivery: {storeInfo.estimatedDeliveryTime}
+                Estimated delivery: {(() => {
+                  const addr = addresses.find((a, index) => (a._id || a.id || `temp-${index}`) === selectedAddress);
+                  if (!addr) return storeInfo.estimatedDeliveryTime;
+                  const isMumbai = addr.city?.toLowerCase().includes('mumbai');
+                  return isMumbai ? "3-7 Days" : "7-14 Days";
+                })()}
               </p>
             </div>
           </div>

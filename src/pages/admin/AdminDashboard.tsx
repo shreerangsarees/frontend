@@ -189,7 +189,7 @@ const AdminDashboard: React.FC = () => {
                 <p className="text-center text-muted-foreground py-4">No recent orders.</p>
               ) : (
                 stats.recentOrders.map((order: any) => (
-                  <div key={order._id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer gap-4" onClick={() => navigate(`/admin/orders/${order._id}`)}>
+                  <div key={order._id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer gap-4" onClick={() => navigate('/admin/orders', { state: { orderId: order._id } })}>
                     <div className="flex items-center gap-4">
                       <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-sm text-primary shrink-0">
                         {order.user?.name?.[0] || '?'}

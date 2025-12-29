@@ -22,9 +22,9 @@ const TrackOrder: React.FC = () => {
 
         setLoading(true);
         try {
-            const res = await fetch(`${API_BASE_URL}/orders/${orderId}`);
+            const res = await fetch(`${API_BASE_URL}/orders/${orderId.trim()}`);
             if (res.ok) {
-                navigate(`/order/${orderId}`);
+                navigate(`/order/${orderId.trim()}`);
             } else {
                 toast.error('Order not found. Please check the order ID.');
             }

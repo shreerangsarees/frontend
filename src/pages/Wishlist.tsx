@@ -79,7 +79,7 @@ const Wishlist: React.FC = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                         {wishlist.map((product) => (
                             <div key={product._id} className="bg-card rounded-xl border border-border overflow-hidden group">
-                                <Link to={`/ product / ${product._id} `}>
+                                <Link to={`/product/${product._id}`}>
                                     <div className="aspect-square bg-white p-4 relative">
                                         <img
                                             src={product.image}
@@ -95,7 +95,7 @@ const Wishlist: React.FC = () => {
                                 </Link>
 
                                 <div className="p-4">
-                                    <Link to={`/ product / ${product._id} `}>
+                                    <Link to={`/product/${product._id}`}>
                                         <h3 className="font-medium text-foreground line-clamp-2 hover:text-primary transition-colors">
                                             {product.name}
                                         </h3>

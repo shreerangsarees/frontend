@@ -9,7 +9,7 @@ const HeroSection: React.FC = () => {
   const { deliveryFee, storeName } = useSettings();
 
   const features = [
-    { icon: Clock, text: '3-5 Days', label: 'Fast Shipping' },
+    { icon: Clock, text: '3-14 Days', label: 'Fast Shipping' },
     { icon: Truck, text: deliveryFee === 0 ? 'Free' : `₹${deliveryFee}`, label: 'Shipping Fee' },
     { icon: ShieldCheck, text: 'Premium', label: 'Quality Assured' },
   ];

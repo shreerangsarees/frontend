@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bell, CheckCheck, Trash2 } from 'lucide-react';
+import { Bell, CheckCheck, Trash2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNotifications, AppNotification } from '@/context/NotificationContext';
 import { useNavigate } from 'react-router-dom';
@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 const NotificationBell: React.FC = () => {
-    const { notifications, unreadCount, markAsRead, markAllAsRead, clearAll, requestPermission } = useNotifications();
+    const { notifications, unreadCount, markAsRead, markAllAsRead, clearAll, requestPermission, deleteNotification } = useNotifications();
     const navigate = useNavigate();
     const [open, setOpen] = useState(false);
     const [permissionState, setPermissionState] = useState(() => {
@@ -139,7 +139,7 @@ const NotificationBell: React.FC = () => {
                 ) : (
                     <>
                         <div className="divide-y divide-border/30">
-                            {notifications.slice(0, 10).map((notification) => (
+                            {notifications.filter(n => !n.read).slice(0, 10).map((notification) => (
                                 <DropdownMenuItem
                                     key={notification.id}
                                     className={cn(
@@ -173,6 +173,17 @@ const NotificationBell: React.FC = () => {
                                     {!notification.read && (
                                         <div className="h-2 w-2 rounded-full bg-primary shrink-0 self-center" />
                                     )}
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-6 w-6 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity absolute right-2 top-2"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            deleteNotification(notification.id);
+                                        }}
+                                    >
+                                        <X className="h-3 w-3" />
+                                    </Button>
                                 </DropdownMenuItem>
                             ))}
                         </div>

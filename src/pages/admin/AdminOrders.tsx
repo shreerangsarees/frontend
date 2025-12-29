@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Filter, CheckCircle, Clock, Package, Truck, X, ChevronDown, ChevronUp, ShoppingBag, FileText, Download, RefreshCcw, AlertTriangle } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import { formatOrderId } from '@/lib/formatters';
 import AdminLayout from './AdminLayout';
 import { Button } from '@/components/ui/button';
@@ -52,6 +53,7 @@ type TabType = 'all' | 'active' | 'completed' | 'cancelled' | 'returns';
 const AdminOrders: React.FC = () => {
   const { user, loading: authLoading, isAdmin } = useAuth();
   const { socket } = useSocket(); // Use socket
+  const location = useLocation();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
@@ -62,6 +64,16 @@ const AdminOrders: React.FC = () => {
       fetchOrders();
     }
   }, [user, isAdmin]);
+
+  // Handle auto-expand from navigation state
+  useEffect(() => {
+    if (location.state?.orderId && orders.length > 0) {
+      setExpandedOrderId(location.state.orderId);
+      // Optional: scroll into view logic
+      const element = document.getElementById(`order-${location.state.orderId}`);
+      if (element) element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [location.state, orders]);
 
   // Listen for real-time updates
   useEffect(() => {
@@ -329,6 +341,7 @@ const AdminOrders: React.FC = () => {
                             order.status === 'Cancelled' && "bg-red-50/30"
                           )}
                           onClick={() => toggleOrderDetails(order.id)}
+                          id={`order-${order.id}`}
                         >
                           <td className="px-4 py-4">
                             <Button variant="ghost" size="sm" className="p-1 h-auto">
