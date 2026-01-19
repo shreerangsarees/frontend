@@ -35,7 +35,7 @@ const RatingSection: React.FC<RatingSectionProps> = ({ productId, productName, o
         }
 
         try {
-            console.log('Submitting review:', { productId, rating, comment: review });
+            // Submitting review
             // Use axios instance to ensure auth token is sent
             const res = await api.post('/reviews', {
                 productId,

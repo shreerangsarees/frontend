@@ -165,7 +165,7 @@ const Profile: React.FC = () => {
         try {
             const token = localStorage.getItem('tmart_token');
             const payload = { addresses };
-            // console.log("Sending address update:", payload);
+            // Sending address update logic
 
             const res = await fetch(`${API_BASE_URL}/users/profile`, {
                 method: 'PUT',

@@ -171,7 +171,7 @@ const Checkout: React.FC = () => {
     }
 
     // Calculate delivery time based on location
-    const isMumbai = addressDetails.city?.toLowerCase().includes('mumbai');
+    const isMumbai = addressDetails.city && addressDetails.city.toLowerCase().includes('mumbai');
     const estimatedDelivery = isMumbai ? "3-7 Days" : "7-14 Days";
 
     setPlacingOrder(true);
@@ -642,7 +642,8 @@ const Checkout: React.FC = () => {
                 Estimated delivery: {(() => {
                   const addr = addresses.find((a, index) => (a._id || a.id || `temp-${index}`) === selectedAddress);
                   if (!addr) return storeInfo.estimatedDeliveryTime;
-                  const isMumbai = addr.city?.toLowerCase().includes('mumbai');
+                  // Safe guard access to city
+                  const isMumbai = addr.city && addr.city.toLowerCase().includes('mumbai');
                   return isMumbai ? "3-7 Days" : "7-14 Days";
                 })()}
               </p>

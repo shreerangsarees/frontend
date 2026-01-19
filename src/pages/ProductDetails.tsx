@@ -104,7 +104,7 @@ const ProductDetails: React.FC = () => {
                 }
 
                 setSuggestedProducts(filtered);
-                console.log('Suggested products loaded:', filtered.length);
+                // Suggested products loaded
             }
         } catch (error) {
             console.error('Error fetching suggested products:', error);

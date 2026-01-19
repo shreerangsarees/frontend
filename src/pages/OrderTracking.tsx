@@ -92,7 +92,7 @@ const OrderTracking: React.FC = () => {
       // Listen for status updates
       socket.on('orderStatusUpdated', (data: { orderId: string; status: string; paymentStatus?: string }) => {
         if (data.orderId === orderId) {
-          console.log('Real-time status update received:', data);
+          // Real-time status update received
           toast.success(`Order status updated to: ${data.status}`);
           setOrder(prev => prev ? {
             ...prev,

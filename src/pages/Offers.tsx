@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Percent, Tag, Timer, ShoppingBag } from 'lucide-react';
+import { Percent, Tag, Timer, ShoppingBag, Loader2 } from 'lucide-react';
 import { API_BASE_URL } from '@/apiConfig';
 import Layout from '@/components/layout/Layout';
 import ProductCard from '@/components/products/ProductCard';

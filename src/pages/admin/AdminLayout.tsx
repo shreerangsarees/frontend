@@ -31,15 +31,27 @@ import { useSocket } from '@/context/SocketContext';
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { signOut, user } = useAuth();
+  const { signOut, user, loading } = useAuth();
   const { socket } = useSocket();
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!loading) {
+      if (!user || user.role !== 'admin') {
+        navigate('/');
+        toast.error('Unauthorized Access');
+      }
+    }
+  }, [user, loading, navigate]);
 
   const handleSignOut = async () => {
     setSidebarOpen(false);
     await signOut();
     navigate('/auth');
   };
+
+  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  if (!user || user.role !== 'admin') return null;
 
   // Close sidebar on navigation (for mobile)
   React.useEffect(() => {

@@ -61,7 +61,7 @@ const CategoryProducts: React.FC = () => {
           }
         } catch (e) {
           // If category fetch fails, use the URL param directly (might be name)
-          console.log('Using URL param as category name');
+          // Using URL param as category name
         }
 
         setCategoryName(actualCategoryName);
@@ -84,7 +84,7 @@ const CategoryProducts: React.FC = () => {
               isNew: p.is_new,
             }));
           setProducts(filtered);
-          console.log(`Found ${filtered.length} products for category: ${actualCategoryName}`);
+          // Found products for category
         }
       } catch (error) {
         console.error(error);

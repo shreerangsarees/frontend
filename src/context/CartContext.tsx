@@ -270,6 +270,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     }
 
+    // Check maximum quantity limit
+    if (quantity > MAX_QUANTITY_PER_ITEM) {
+      toast.error(`Maximum ${MAX_QUANTITY_PER_ITEM} items allowed per product`);
+      return false;
+    }
+
     dispatch({ type: 'UPDATE_QUANTITY', payload: { productId, quantity, selectedColor } });
     return true;
   };
